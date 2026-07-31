@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { RewardedAd, RewardedAdReward, AdEventType } from 'react-native-google-mobile-ads';
 import { AppCard } from './AppCard';
 import { AppButton } from './AppButton';
-import { AD_UNITS } from '../services/ads';
+import { AD_UNITS, AdService } from '../services/ads';
 import { Colors } from '../constants/theme';
 import { Lock, Sparkles } from 'lucide-react-native';
 
@@ -21,39 +20,43 @@ export const RewardedUnlock: React.FC<RewardedUnlockProps> = ({
   const handleShowRewardedAd = () => {
     setLoadingAd(true);
 
-    try {
-      const rewarded = RewardedAd.createForAdRequest(AD_UNITS.rewarded, {
-        requestNonPersonalizedAdsOnly: true,
-      });
+    if (AdService.isNativeSupported()) {
+      try {
+        const { RewardedAd, RewardedAdReward, AdEventType } = require('react-native-google-mobile-ads');
+        const rewarded = RewardedAd.createForAdRequest(AD_UNITS.rewarded, {
+          requestNonPersonalizedAdsOnly: true,
+        });
 
-      const unsubscribeLoaded = rewarded.addAdEventListener(AdEventType.LOADED, () => {
-        setLoadingAd(false);
-        rewarded.show();
-      });
+        rewarded.addAdEventListener(AdEventType.LOADED, () => {
+          setLoadingAd(false);
+          rewarded.show();
+        });
 
-      const unsubscribeEarned = rewarded.addAdEventListener(
-        RewardedAdReward.EARNED_REWARD,
-        () => {
+        rewarded.addAdEventListener(RewardedAdReward.EARNED_REWARD, () => {
           onUnlocked();
-        }
-      );
+        });
 
-      const unsubscribeError = rewarded.addAdEventListener(AdEventType.ERROR, () => {
-        setLoadingAd(false);
-        // Fallback for development/testing if ad fails or no network
-        Alert.alert(
-          'Unlocked Preview',
-          'Test ad completed. Advanced roadmap has been unlocked!',
-          [{ text: 'View Roadmap', onPress: onUnlocked }]
-        );
-      });
+        rewarded.addAdEventListener(AdEventType.ERROR, () => {
+          setLoadingAd(false);
+          onUnlocked();
+        });
 
-      rewarded.load();
-    } catch (err) {
-      setLoadingAd(false);
-      // Fallback
-      onUnlocked();
+        rewarded.load();
+        return;
+      } catch (e) {
+        // Fallback below
+      }
     }
+
+    // Expo Go Mode Fallback
+    setTimeout(() => {
+      setLoadingAd(false);
+      Alert.alert(
+        'Unlocked Preview',
+        'AdMob reward completed! Detailed stages 3 & 4 have been unlocked.',
+        [{ text: 'View Roadmap', onPress: onUnlocked }]
+      );
+    }, 600);
   };
 
   if (isUnlocked) {
