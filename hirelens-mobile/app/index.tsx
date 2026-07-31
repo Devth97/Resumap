@@ -5,15 +5,21 @@ import { AppButton } from '../components/AppButton';
 import { AppCard } from '../components/AppCard';
 import { Colors } from '../constants/theme';
 import { ROUTES } from '../constants/routes';
-import { ShieldCheck, Cpu, Target, Award, ArrowRight } from 'lucide-react-native';
+import { ShieldCheck, Cpu, Target, Award, ArrowRight, Sparkles } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Hero Glow Section */}
+      {/* Hero Header Section */}
       <View style={styles.heroSection}>
+        <Image
+          source={require('../assets/logo.jpg')}
+          style={styles.logoImage}
+          resizeMode="cover"
+        />
+
         <View style={styles.badgeRow}>
           <View style={styles.betaBadge}>
             <Text style={styles.betaText}>BETA v1.0 • HIRE LENS</Text>
@@ -34,9 +40,27 @@ export default function HomeScreen() {
           title="Start Resume Analysis"
           onPress={() => router.push(ROUTES.PRIVACY as any)}
           icon={<ArrowRight size={20} color="#FFFFFF" />}
-          style={{ width: '100%', marginTop: 16 }}
+          style={{ width: '100%', marginTop: 12 }}
         />
       </View>
+
+      {/* Meet Lensy Mascot Card */}
+      <AppCard style={styles.mascotCard} glowing>
+        <Image
+          source={require('../assets/mascot.jpg')}
+          style={styles.mascotAvatar}
+          resizeMode="cover"
+        />
+        <View style={styles.mascotContent}>
+          <View style={styles.mascotHeaderRow}>
+            <Sparkles size={18} color={Colors.accentSecondary} />
+            <Text style={styles.mascotName}>Meet Lensy — AI Career Mentor</Text>
+          </View>
+          <Text style={styles.mascotQuote}>
+            "Hi there! I'm Lensy, your student career guide. I'll evaluate your skills, redact your personal info, and build a step-by-step roadmap to get you job-ready!"
+          </Text>
+        </View>
+      </AppCard>
 
       {/* Feature Highlights Grid */}
       <View style={styles.featuresSection}>
@@ -102,12 +126,20 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     alignItems: 'center',
-    paddingVertical: 24,
-    gap: 12,
+    paddingVertical: 16,
+    gap: 10,
+  },
+  logoImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: Colors.cardBorderGlow,
+    marginBottom: 6,
   },
   badgeRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   betaBadge: {
     backgroundColor: 'rgba(99, 102, 241, 0.15)',
@@ -124,33 +156,67 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   heroTitle: {
-    fontSize: 42,
+    fontSize: 40,
     fontWeight: '900',
     color: Colors.textPrimary,
     letterSpacing: -1,
   },
   heroSubtitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: Colors.textSecondary,
     textAlign: 'center',
   },
   heroDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
     textAlign: 'center',
-    lineHeight: 20,
-    marginTop: 4,
+    lineHeight: 19,
+  },
+  mascotCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 14,
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
+    borderColor: 'rgba(99, 102, 241, 0.35)',
+    marginVertical: 14,
+  },
+  mascotAvatar: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 2,
+    borderColor: Colors.accentSecondary,
+  },
+  mascotContent: {
+    flex: 1,
+    gap: 4,
+  },
+  mascotHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  mascotName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: Colors.accentSecondary,
+  },
+  mascotQuote: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 17,
+    fontStyle: 'italic',
   },
   featuresSection: {
-    marginTop: 20,
-    gap: 12,
+    gap: 10,
   },
   sectionHeading: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: Colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   featureCard: {
     flexDirection: 'row',
@@ -160,9 +226,9 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   featureIconCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
