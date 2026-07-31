@@ -111,6 +111,8 @@ export default function ResultsScreen() {
       <AtsPdfGeneratorModal
         visible={pdfModalVisible}
         onClose={() => setPdfModalVisible(false)}
+        targetRoleName={res.targetRoleName || 'Software Engineer'}
+        analysisResult={res}
       />
 
       {/* Evaluation Breakdown Bars */}
