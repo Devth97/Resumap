@@ -10,6 +10,7 @@ import { RoadmapStage, RoadmapStageItem } from '../../components/RoadmapStage';
 import { RewardedUnlock } from '../../components/RewardedUnlock';
 import { AdBanner } from '../../components/AdBanner';
 import { BulletRewriterCard } from '../../components/BulletRewriterCard';
+import { AtsPdfGeneratorModal } from '../../components/AtsPdfGeneratorModal';
 import { AppCard } from '../../components/AppCard';
 import { AppButton } from '../../components/AppButton';
 import { Colors } from '../../constants/theme';
@@ -24,6 +25,7 @@ export default function ResultsScreen() {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<any>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -89,6 +91,14 @@ export default function ResultsScreen() {
             type="readiness"
           />
         </View>
+
+        {/* 1-Click ATS PDF Generator CTA */}
+        <AppButton
+          title="📄 Download 1-Page ATS PDF Resume"
+          onPress={() => setPdfModalVisible(true)}
+          style={{ width: '100%', marginTop: 14 }}
+        />
+
         <View style={styles.disclaimerBox}>
           <ShieldAlert size={14} color={Colors.textMuted} />
           <Text style={styles.disclaimerText}>
@@ -96,6 +106,12 @@ export default function ResultsScreen() {
           </Text>
         </View>
       </AppCard>
+
+      {/* ATS PDF Generator Modal */}
+      <AtsPdfGeneratorModal
+        visible={pdfModalVisible}
+        onClose={() => setPdfModalVisible(false)}
+      />
 
       {/* Evaluation Breakdown Bars */}
       {res.dimensionBreakdown ? (
