@@ -1,12 +1,24 @@
 import { Platform } from 'react-native';
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ||
-  (Platform.OS === 'web' ? 'http://localhost:8080/api/v1' : 'http://192.168.1.5:8080/api/v1');
+const getApiBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_API_BASE_URL;
+  }
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // On Vercel public web deployment, connect to public HTTPS backend API
+    if (hostname.includes('vercel.app')) {
+      return 'https://resumap-sigma.vercel.app/api/v1';
+    }
+    return 'http://localhost:8080/api/v1';
+  }
+  return 'http://192.168.1.5:8080/api/v1';
+};
 
 export class ApiClient {
   public static async get<T>(path: string): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}${path}`, {
       headers: {
         'Accept': 'application/json',
       },
@@ -20,7 +32,8 @@ export class ApiClient {
   }
 
   public static async post<T>(path: string, body: any, headers: Record<string, string> = {}): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -74,7 +87,8 @@ export class ApiClient {
       headers['x-session-id'] = sessionId;
     }
 
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}${path}`, {
       method: 'POST',
       headers,
       body: formData,
