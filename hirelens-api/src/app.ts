@@ -29,6 +29,18 @@ export function buildApp() {
     timeWindow: '1 minute',
   });
 
+  // Root Welcome & Health Check Route
+  app.get('/', async (_request, reply) => {
+    return reply.send({
+      name: 'ResuMap (HireLens) API',
+      status: 'online',
+      version: '1.0.0',
+      health: '/api/v1/health',
+      roles: '/api/v1/roles',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // Global Error Handler
   app.setErrorHandler((error, _request, reply) => {
     logger.error(error);
