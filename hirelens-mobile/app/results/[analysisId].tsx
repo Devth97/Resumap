@@ -9,6 +9,7 @@ import { GapCard, GapItem } from '../../components/GapCard';
 import { RoadmapStage, RoadmapStageItem } from '../../components/RoadmapStage';
 import { RewardedUnlock } from '../../components/RewardedUnlock';
 import { AdBanner } from '../../components/AdBanner';
+import { BulletRewriterCard } from '../../components/BulletRewriterCard';
 import { AppCard } from '../../components/AppCard';
 import { AppButton } from '../../components/AppButton';
 import { Colors } from '../../constants/theme';
@@ -126,6 +127,9 @@ export default function ResultsScreen() {
           ))}
         </View>
       ) : null}
+
+      {/* AI Bullet Point Quantifier & ATS Rewriter Tool */}
+      <BulletRewriterCard />
 
       {/* Skill Gaps */}
       {res.gaps && res.gaps.length > 0 ? (
