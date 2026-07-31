@@ -18,16 +18,16 @@ export const AppCard: React.FC<AppCardProps> = ({ children, style, glowing = fal
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 18,
+    backgroundColor: 'rgba(18, 24, 38, 0.85)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.09)',
     padding: 18,
     marginVertical: 8,
     ...Shadows.card,
   },
   glowingCard: {
-    borderColor: Colors.cardBorderGlow,
+    borderColor: 'rgba(99, 102, 241, 0.5)',
     ...Shadows.glow,
   },
 });
