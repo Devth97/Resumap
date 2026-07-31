@@ -26,7 +26,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Hero Section Container (Inspired by PodCraze Purple Hero) */}
+        {/* Hero Section Container */}
         <View style={styles.heroBox}>
           <View style={styles.heroContent}>
             <View style={styles.stickerTag}>
@@ -43,7 +43,7 @@ export default function HomeScreen() {
 
             <AppButton
               title="Start Resume Analysis →"
-              onPress={() => router.push(ROUTES.PRIVACY as any)}
+              onPress={() => router.push(ROUTES.UPLOAD as any)}
               style={styles.heroButton}
             />
           </View>
