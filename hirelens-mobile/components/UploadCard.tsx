@@ -57,7 +57,8 @@ export const UploadCard: React.FC<UploadCardProps> = ({
         name: asset.name,
         size,
         mimeType,
-      });
+        file: (asset as any).file,
+      } as any);
     } catch (err: any) {
       onError('Failed to select file. Please try again.');
     }

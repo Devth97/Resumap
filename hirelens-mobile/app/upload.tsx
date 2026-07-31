@@ -29,7 +29,8 @@ export default function UploadScreen() {
         selectedFile.uri,
         selectedFile.name,
         selectedFile.mimeType,
-        sessionId
+        sessionId,
+        (selectedFile as any).file
       );
 
       await StorageService.setResumeExtraction({

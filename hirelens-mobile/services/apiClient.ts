@@ -1,4 +1,8 @@
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.0.2.2:8080/api/v1';
+import { Platform } from 'react-native';
+
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  (Platform.OS === 'web' ? 'http://localhost:8080/api/v1' : 'http://192.168.1.5:8080/api/v1');
 
 export class ApiClient {
   public static async get<T>(path: string): Promise<T> {
@@ -33,13 +37,37 @@ export class ApiClient {
     return data as T;
   }
 
-  public static async uploadFile<T>(path: string, fileUri: string, fileName: string, mimeType: string, sessionId?: string): Promise<T> {
+  public static async uploadFile<T>(
+    path: string,
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+    sessionId?: string,
+    fileObj?: any
+  ): Promise<T> {
     const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      name: fileName,
-      type: mimeType,
-    } as any);
+
+    if (Platform.OS === 'web') {
+      if (fileObj) {
+        formData.append('file', fileObj, fileName);
+      } else if (fileUri.startsWith('blob:') || fileUri.startsWith('data:')) {
+        const response = await fetch(fileUri);
+        const blob = await response.blob();
+        formData.append('file', blob, fileName);
+      } else {
+        formData.append('file', {
+          uri: fileUri,
+          name: fileName,
+          type: mimeType,
+        } as any);
+      }
+    } else {
+      formData.append('file', {
+        uri: fileUri,
+        name: fileName,
+        type: mimeType,
+      } as any);
+    }
 
     const headers: Record<string, string> = {};
     if (sessionId) {
