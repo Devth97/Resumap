@@ -9,7 +9,7 @@ export const Colors = {
 
   accentPrimary: '#6366F1', // Neon Violet
   accentSecondary: '#06B6D4', // Electric Cyan
-  accentGradient: ['#6366F1', '#06B6D4'],
+  accentGradient: ['#6366F1', '#06B6D4'] as const,
 
   success: '#10B981', // Emerald
   warning: '#F59E0B', // Amber

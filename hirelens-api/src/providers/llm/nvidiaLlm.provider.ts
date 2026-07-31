@@ -183,7 +183,7 @@ export class NvidiaLlmProvider {
         .map((sk) => ({
           skillId: sk.id,
           title: `Demonstrate ${sk.name} with Project Evidence`,
-          priority: sk.priority === 'required' ? 'high' : 'medium',
+          priority: (sk.priority === 'required' ? 'high' : 'medium') as 'high' | 'medium' | 'low',
           reason: `Target role requires demonstrated ${sk.name} capability.`,
           currentEvidence: 'No direct project evidence found in resume.',
           nextAction: sk.beginnerActions[0] || `Build a sample project using ${sk.name}.`,

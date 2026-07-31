@@ -31,7 +31,7 @@ export class ImageProcessingService {
       }
 
       // Convert to sRGB JPEG format
-      return await pipeline.toSpace('srgb').jpeg({ quality: 85 }).toBuffer();
+      return await pipeline.toColourspace('srgb').jpeg({ quality: 85 }).toBuffer();
     } catch (err) {
       // Return original buffer if Sharp transformation encounters edge case
       return buffer;
