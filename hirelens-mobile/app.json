@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#090D16"
+      "backgroundColor": "#FAF7F0"
     },
     "ios": {
       "supportsTablet": true
@@ -18,9 +18,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#090D16"
+        "backgroundColor": "#FAF7F0"
       },
-      "package": "in.ornalens.hirelens"
+      "package": "in.ornalens.hirelens",
+      "permissions": []
     },
     "web": {
       "bundler": "metro"
