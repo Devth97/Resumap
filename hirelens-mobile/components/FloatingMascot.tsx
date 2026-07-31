@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Colors, Shadows } from '../constants/theme';
 import { ROUTES } from '../constants/routes';
-import { Sparkles, X, Shield, Award, Upload, HelpCircle } from 'lucide-react-native';
+import { Sparkles, X, Shield, Award, Upload } from 'lucide-react-native';
 
 export const FloatingMascot: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -20,7 +20,7 @@ export const FloatingMascot: React.FC = () => {
 
   return (
     <>
-      {/* Floating Bottom-Right Trigger Button */}
+      {/* Neo-Brutalist Floating Mascot Trigger */}
       <View style={styles.floatingContainer} pointerEvents="box-none">
         <TouchableOpacity
           activeOpacity={0.85}
@@ -36,7 +36,7 @@ export const FloatingMascot: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Interactive AI Assistant Modal */}
+      {/* Interactive AI Assistant Popover Modal */}
       <Modal
         visible={modalVisible}
         transparent
@@ -60,8 +60,8 @@ export const FloatingMascot: React.FC = () => {
                   <View style={styles.nameRow}>
                     <Text style={styles.mascotName}>Lensy AI</Text>
                     <View style={styles.aiBadge}>
-                      <Sparkles size={10} color="#06B6D4" />
-                      <Text style={styles.aiBadgeText}>AI GUIDE</Text>
+                      <Sparkles size={10} color="#18181B" />
+                      <Text style={styles.aiBadgeText}>AI MENTOR</Text>
                     </View>
                   </View>
                   <Text style={styles.mascotSubtitle}>Student Career Assistant</Text>
@@ -71,28 +71,28 @@ export const FloatingMascot: React.FC = () => {
                 onPress={() => setModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={18} color={Colors.textSecondary} />
+                <X size={18} color="#18181B" />
               </TouchableOpacity>
             </View>
 
             {/* Speech Bubble */}
             <View style={styles.speechBubble}>
               <Text style={styles.speechText}>
-                "Hey there! I'm Lensy. Whether you need resume formatting tips, want to check PII privacy, or jump straight into analysis — I'm here to guide you!"
+                "Hey there! I'm Lensy. Need resume tips, PII privacy checks, or instant ATS bullet point optimization? Tap any option below!"
               </Text>
             </View>
 
             {/* Quick Actions List */}
             <ScrollView style={styles.actionsList} showsVerticalScrollIndicator={false}>
               <TouchableOpacity
-                style={styles.actionItem}
+                style={[styles.actionItem, { backgroundColor: '#FFD93D' }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.UPLOAD as any);
                 }}
               >
-                <View style={[styles.actionIconCircle, { backgroundColor: 'rgba(99, 102, 241, 0.2)' }]}>
-                  <Upload size={18} color={Colors.accentPrimary} />
+                <View style={styles.actionIconCircle}>
+                  <Upload size={18} color="#18181B" />
                 </View>
                 <View style={styles.actionTextContainer}>
                   <Text style={styles.actionTitle}>Upload & Analyze Resume</Text>
@@ -101,14 +101,14 @@ export const FloatingMascot: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionItem}
+                style={[styles.actionItem, { backgroundColor: '#00CEC9' }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.PRIVACY as any);
                 }}
               >
-                <View style={[styles.actionIconCircle, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
-                  <Shield size={18} color={Colors.success} />
+                <View style={styles.actionIconCircle}>
+                  <Shield size={18} color="#18181B" />
                 </View>
                 <View style={styles.actionTextContainer}>
                   <Text style={styles.actionTitle}>PII Privacy Shield</Text>
@@ -117,18 +117,18 @@ export const FloatingMascot: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionItem}
+                style={[styles.actionItem, { backgroundColor: '#FF7675' }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.ROLE as any);
                 }}
               >
-                <View style={[styles.actionIconCircle, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-                  <Award size={18} color={Colors.warning} />
+                <View style={styles.actionIconCircle}>
+                  <Award size={18} color="#FFFFFF" />
                 </View>
                 <View style={styles.actionTextContainer}>
-                  <Text style={styles.actionTitle}>Explore Target Roles</Text>
-                  <Text style={styles.actionSub}>View requirements for SDE, Data Analyst & AI</Text>
+                  <Text style={[styles.actionTitle, { color: '#FFFFFF' }]}>Explore Target Roles</Text>
+                  <Text style={[styles.actionSub, { color: '#FFFDF5' }]}>View requirements for SDE, Data Analyst & AI</Text>
                 </View>
               </TouchableOpacity>
             </ScrollView>
@@ -147,35 +147,35 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   mascotButton: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    borderWidth: 2.5,
-    borderColor: '#6366F1',
-    backgroundColor: '#0F172A',
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    borderWidth: 3,
+    borderColor: '#18181B',
+    backgroundColor: '#FFD93D',
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.glow,
   },
   avatarImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
   },
   onlineDot: {
     position: 'absolute',
     top: 2,
     right: 2,
-    width: 13,
-    height: 13,
-    borderRadius: 6.5,
-    backgroundColor: '#10B981',
-    borderWidth: 2,
-    borderColor: '#090D16',
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    backgroundColor: '#00B894',
+    borderWidth: 2.5,
+    borderColor: '#18181B',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(7, 10, 17, 0.82)',
+    backgroundColor: 'rgba(24, 24, 27, 0.65)',
     justifyContent: 'flex-end',
     alignItems: 'center',
     padding: 16,
@@ -183,10 +183,10 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#111827',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: 'rgba(99, 102, 241, 0.35)',
+    borderWidth: 3,
+    borderColor: '#18181B',
     padding: 20,
     gap: 16,
     ...Shadows.card,
@@ -202,11 +202,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#06B6D4',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2.5,
+    borderColor: '#18181B',
   },
   nameRow: {
     flexDirection: 'row',
@@ -214,69 +214,76 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mascotName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#F8FAFC',
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#18181B',
   },
   aiBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(6, 182, 212, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.4)',
+    backgroundColor: '#FFD93D',
+    borderWidth: 1.5,
+    borderColor: '#18181B',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
   },
   aiBadgeText: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#06B6D4',
+    fontWeight: '900',
+    color: '#18181B',
   },
   mascotSubtitle: {
     fontSize: 12,
     color: Colors.textSecondary,
+    fontWeight: '600',
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FAF7F0',
+    borderWidth: 2,
+    borderColor: '#18181B',
     alignItems: 'center',
     justifyContent: 'center',
   },
   speechBubble: {
-    backgroundColor: 'rgba(99, 102, 241, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
+    backgroundColor: '#FFFDF5',
+    borderWidth: 2,
+    borderColor: '#18181B',
     borderRadius: 16,
     padding: 14,
+    ...Shadows.button,
   },
   speechText: {
     fontSize: 13,
-    color: Colors.textPrimary,
+    color: '#18181B',
     lineHeight: 19,
-    fontStyle: 'italic',
+    fontWeight: '600',
   },
   actionsList: {
-    maxHeight: 220,
+    maxHeight: 230,
   },
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 2.5,
+    borderColor: '#18181B',
+    marginBottom: 10,
+    ...Shadows.button,
   },
   actionIconCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#18181B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -284,13 +291,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#18181B',
   },
   actionSub: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#475569',
     marginTop: 1,
+    fontWeight: '600',
   },
 });

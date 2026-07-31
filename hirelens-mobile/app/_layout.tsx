@@ -12,18 +12,18 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <View style={styles.container}>
-        <StatusBar style="light" backgroundColor="#070A11" />
+        <StatusBar style="dark" backgroundColor="#FAF7F0" />
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#070A11',
+              backgroundColor: '#FAF7F0',
             },
-            headerTintColor: '#F8FAFC',
+            headerTintColor: '#18181B',
             headerTitleStyle: {
-              fontWeight: '700',
+              fontWeight: '900',
             },
             contentStyle: {
-              backgroundColor: '#070A11',
+              backgroundColor: '#FAF7F0',
             },
           }}
         >
@@ -47,6 +47,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#070A11',
+    backgroundColor: '#FAF7F0',
   },
 });

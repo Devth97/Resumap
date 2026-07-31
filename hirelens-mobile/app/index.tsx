@@ -12,83 +12,98 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* CRED-Style Glowing Top Badge */}
-        <View style={styles.topBadgeContainer}>
-          <View style={styles.credPill}>
-            <Text style={styles.credPillDot}>•</Text>
-            <Text style={styles.credPillText}>INSPIRED BY CRED & INSPIRA UI</Text>
+        {/* Playful Top Header Bar */}
+        <View style={styles.headerBar}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandLogoBox}>
+              <Text style={styles.brandLogoIcon}>📄</Text>
+            </View>
+            <Text style={styles.brandTitle}>ResuMap</Text>
+          </View>
+
+          <View style={styles.betaPill}>
+            <Text style={styles.betaPillText}>⚡ BETA v1.0</Text>
           </View>
         </View>
 
-        {/* Hero Header Section */}
-        <View style={styles.heroSection}>
-          <View style={styles.logoGlowRing}>
-            <Image
-              source={require('../assets/logo.jpg')}
-              style={styles.logoImage}
-              resizeMode="cover"
+        {/* Hero Section Container (Inspired by PodCraze Purple Hero) */}
+        <View style={styles.heroBox}>
+          <View style={styles.heroContent}>
+            <View style={styles.stickerTag}>
+              <Text style={styles.stickerTagText}>★ #1 STUDENT ATS ANALYZER</Text>
+            </View>
+
+            <Text style={styles.heroTitle}>
+              Tune In to Your <Text style={{ color: '#FFD93D' }}>Dream Career</Text>
+            </Text>
+
+            <Text style={styles.heroSubtitle}>
+              Upload your resume to get instant ATS scores, detect skill gaps, and generate a 4-stage action roadmap.
+            </Text>
+
+            <AppButton
+              title="Start Resume Analysis →"
+              onPress={() => router.push(ROUTES.PRIVACY as any)}
+              style={styles.heroButton}
             />
           </View>
 
-          <Text style={styles.heroTitle}>
-            Resu<Text style={{ color: Colors.accentPrimary }}>Map</Text>
-          </Text>
-
-          <Text style={styles.heroSubtitle}>
-            AI-Powered Student Resume & Job-Readiness Analyzer
-          </Text>
-
-          <Text style={styles.heroDescription}>
-            Bridge the gap between academic projects and entry-level role expectations with evidence-based scoring and a personalized 4-stage action roadmap.
-          </Text>
-
-          <AppButton
-            title="Start Resume Analysis →"
-            onPress={() => router.push(ROUTES.PRIVACY as any)}
-            style={styles.primaryActionButton}
-          />
+          <View style={styles.mascotHeroWrapper}>
+            <View style={styles.mascotFrame}>
+              <Image
+                source={require('../assets/mascot.jpg')}
+                style={styles.heroMascotImage}
+                resizeMode="cover"
+              />
+              <View style={styles.mascotBadge}>
+                <Text style={styles.mascotBadgeText}>LENSY AI</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {/* CRED-Style Stat Cards Grid */}
-        <View style={styles.statGrid}>
-          <View style={styles.statCard}>
+        {/* Neo-Brutalist Stat Banner */}
+        <View style={styles.statBanner}>
+          <View style={styles.statItem}>
             <Text style={styles.statNumber}>100%</Text>
-            <Text style={styles.statLabel}>PII Redaction Privacy</Text>
+            <Text style={styles.statLabel}>PII Redacted</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: '#06B6D4' }]}>70B</Text>
-            <Text style={styles.statLabel}>NVIDIA Llama 3.3 AI</Text>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: '#6C5CE7' }]}>70B</Text>
+            <Text style={styles.statLabel}>NVIDIA AI Model</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: '#10B981' }]}>4-Stage</Text>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: '#00CEC9' }]}>4-Stage</Text>
             <Text style={styles.statLabel}>Action Roadmap</Text>
           </View>
         </View>
 
-        {/* Meet Lensy Mascot Highlight Card */}
-        <AppCard style={styles.mascotCard} glowing>
+        {/* Meet Lensy Feature Card */}
+        <AppCard style={styles.mascotHighlightCard} glowing>
           <Image
             source={require('../assets/mascot.jpg')}
             style={styles.mascotAvatar}
             resizeMode="cover"
           />
           <View style={styles.mascotContent}>
-            <View style={styles.mascotHeaderRow}>
+            <View style={styles.mascotTitleRow}>
               <Text style={styles.sparkleIcon}>✨</Text>
-              <Text style={styles.mascotName}>Meet Lensy — Your AI Assistant</Text>
+              <Text style={styles.mascotName}>Meet Lensy — Your Career Mentor</Text>
             </View>
             <Text style={styles.mascotQuote}>
-              "Hi there! I'm Lensy, your student career guide. Tap my floating icon on the bottom right anytime to get instant tips!"
+              "Hi there! Tap my floating widget at the bottom right anytime to get instant resume tips & ATS bullet suggestions!"
             </Text>
           </View>
         </AppCard>
 
-        {/* Inspira UI Feature Cards */}
+        {/* Feature Cards Grid (Neo-Brutalist Style) */}
         <View style={styles.featuresSection}>
           <Text style={styles.sectionHeading}>Engineered for Student Success</Text>
 
           <AppCard style={styles.featureCard}>
-            <View style={styles.featureIconCircle}>
+            <View style={[styles.featureIconBox, { backgroundColor: '#FFD93D' }]}>
               <Text style={styles.emojiIcon}>⚡</Text>
             </View>
             <View style={styles.featureContent}>
@@ -100,7 +115,7 @@ export default function HomeScreen() {
           </AppCard>
 
           <AppCard style={styles.featureCard}>
-            <View style={styles.featureIconCircle}>
+            <View style={[styles.featureIconBox, { backgroundColor: '#00CEC9' }]}>
               <Text style={styles.emojiIcon}>🛡️</Text>
             </View>
             <View style={styles.featureContent}>
@@ -112,7 +127,7 @@ export default function HomeScreen() {
           </AppCard>
 
           <AppCard style={styles.featureCard}>
-            <View style={styles.featureIconCircle}>
+            <View style={[styles.featureIconBox, { backgroundColor: '#FF7675' }]}>
               <Text style={styles.emojiIcon}>🎯</Text>
             </View>
             <View style={styles.featureContent}>
@@ -124,7 +139,7 @@ export default function HomeScreen() {
           </AppCard>
 
           <AppCard style={styles.featureCard}>
-            <View style={styles.featureIconCircle}>
+            <View style={[styles.featureIconBox, { backgroundColor: '#00B894' }]}>
               <Text style={styles.emojiIcon}>🏆</Text>
             </View>
             <View style={styles.featureContent}>
@@ -143,126 +158,179 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#070A11',
+    backgroundColor: '#FAF7F0',
   },
   container: {
-    padding: 20,
-    backgroundColor: '#070A11',
+    padding: 16,
+    backgroundColor: '#FAF7F0',
     paddingBottom: 90,
+    gap: 14,
   },
-  topBadgeContainer: {
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 12,
-  },
-  credPill: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(99, 102, 241, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.35)',
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 6,
   },
-  credPillDot: {
-    color: '#06B6D4',
-    fontSize: 14,
-  },
-  credPillText: {
-    color: Colors.accentSecondary,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  heroSection: {
+  brandRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
+    gap: 8,
   },
-  logoGlowRing: {
-    padding: 3,
-    borderRadius: 30,
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(99, 102, 241, 0.4)',
+  brandLogoBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#FFD93D',
+    borderWidth: 2,
+    borderColor: '#18181B',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  logoImage: {
-    width: 92,
-    height: 92,
-    borderRadius: 26,
+  brandLogoIcon: {
+    fontSize: 18,
+  },
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#18181B',
+    letterSpacing: -0.5,
+  },
+  betaPill: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#18181B',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  betaPillText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#18181B',
+  },
+  heroBox: {
+    backgroundColor: '#6C5CE7',
+    borderRadius: 24,
+    borderWidth: 3,
+    borderColor: '#18181B',
+    padding: 20,
+    gap: 16,
+  },
+  heroContent: {
+    gap: 10,
+  },
+  stickerTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFD93D',
+    borderWidth: 2,
+    borderColor: '#18181B',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  stickerTagText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#18181B',
+    letterSpacing: 0.5,
   },
   heroTitle: {
-    fontSize: 44,
+    fontSize: 32,
     fontWeight: '900',
-    color: '#F8FAFC',
-    letterSpacing: -1.5,
+    color: '#FFFFFF',
+    lineHeight: 38,
+    letterSpacing: -0.8,
   },
   heroSubtitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#94A3B8',
-    textAlign: 'center',
-  },
-  heroDescription: {
     fontSize: 13,
-    color: '#64748B',
-    textAlign: 'center',
-    lineHeight: 20,
+    color: '#E0E7FF',
+    lineHeight: 19,
+    fontWeight: '500',
+  },
+  heroButton: {
+    marginTop: 6,
+  },
+  mascotHeroWrapper: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  mascotFrame: {
+    position: 'relative',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#18181B',
+    overflow: 'hidden',
+    backgroundColor: '#FFD93D',
+  },
+  heroMascotImage: {
+    width: 140,
+    height: 140,
+  },
+  mascotBadge: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    backgroundColor: '#00CEC9',
+    borderWidth: 2,
+    borderColor: '#18181B',
     paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
-  primaryActionButton: {
-    width: '100%',
-    marginTop: 8,
+  mascotBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#18181B',
   },
-  statGrid: {
+  statBanner: {
     flexDirection: 'row',
-    gap: 10,
-    marginVertical: 16,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(18, 24, 38, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2.5,
+    borderColor: '#18181B',
+    borderRadius: 18,
     padding: 14,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  statItem: {
     alignItems: 'center',
   },
   statNumber: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#6366F1',
-    marginBottom: 2,
+    color: '#FF7675',
   },
   statLabel: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#94A3B8',
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#475569',
+    marginTop: 2,
   },
-  mascotCard: {
+  statDivider: {
+    width: 2,
+    height: 32,
+    backgroundColor: '#18181B',
+  },
+  mascotHighlightCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     padding: 14,
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
-    borderColor: 'rgba(99, 102, 241, 0.35)',
-    marginVertical: 10,
+    backgroundColor: '#FFFDF5',
   },
   mascotAvatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 2,
-    borderColor: Colors.accentSecondary,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2.5,
+    borderColor: '#18181B',
   },
   mascotContent: {
     flex: 1,
     gap: 4,
   },
-  mascotHeaderRow: {
+  mascotTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -272,24 +340,24 @@ const styles = StyleSheet.create({
   },
   mascotName: {
     fontSize: 14,
-    fontWeight: '800',
-    color: Colors.accentSecondary,
+    fontWeight: '900',
+    color: '#18181B',
   },
   mascotQuote: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#475569',
     lineHeight: 17,
-    fontStyle: 'italic',
+    fontWeight: '500',
   },
   featuresSection: {
     gap: 10,
-    marginTop: 8,
+    marginTop: 4,
   },
   sectionHeading: {
     fontSize: 18,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: 4,
+    fontWeight: '900',
+    color: '#18181B',
+    marginBottom: 2,
   },
   featureCard: {
     flexDirection: 'row',
@@ -298,11 +366,12 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 0,
   },
-  featureIconCircle: {
+  featureIconBox: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#18181B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -314,13 +383,13 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '900',
+    color: '#18181B',
     marginBottom: 2,
   },
   featureDesc: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#475569',
     lineHeight: 16,
   },
 });

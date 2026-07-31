@@ -1,6 +1,5 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Shadows } from '../constants/theme';
 
 interface AppButtonProps {
@@ -26,55 +25,35 @@ export const AppButton: React.FC<AppButtonProps> = ({
 }) => {
   const isPrimary = variant === 'primary';
   const isOutline = variant === 'outline';
-
-  if (isPrimary && !disabled) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={[styles.glowWrapper, style]}
-      >
-        <LinearGradient
-          colors={Colors.accentGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientButton}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <>
-              {icon}
-              <Text style={[styles.primaryText, textStyle]}>{title}</Text>
-            </>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  }
+  const isDanger = variant === 'danger';
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled || loading}
       style={[
         styles.button,
-        isOutline ? styles.outlineButton : styles.secondaryButton,
+        isPrimary && styles.primaryButton,
+        !isPrimary && !isOutline && !isDanger && styles.secondaryButton,
+        isOutline && styles.outlineButton,
+        isDanger && styles.dangerButton,
         disabled && styles.disabledButton,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={Colors.textPrimary} />
+        <ActivityIndicator color={isPrimary ? '#18181B' : Colors.textPrimary} />
       ) : (
         <>
           {icon}
           <Text
             style={[
-              styles.secondaryText,
+              styles.baseText,
+              isPrimary && styles.primaryText,
+              !isPrimary && !isOutline && styles.secondaryText,
               isOutline && styles.outlineText,
+              isDanger && styles.dangerText,
               disabled && styles.disabledText,
               textStyle,
             ]}
@@ -88,54 +67,49 @@ export const AppButton: React.FC<AppButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-  glowWrapper: {
-    borderRadius: 14,
-    ...Shadows.glow,
-  },
-  gradientButton: {
-    height: 52,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    gap: 8,
-  },
   button: {
-    height: 52,
-    borderRadius: 14,
+    height: 54,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
     gap: 8,
+    borderWidth: 2.5,
+    borderColor: '#18181B',
+    ...Shadows.button,
+  },
+  primaryButton: {
+    backgroundColor: '#FFD93D', // Canary Yellow
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#6C5CE7', // Electric Violet
   },
   outlineButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: Colors.accentPrimary,
+    backgroundColor: '#FFFFFF',
+  },
+  dangerButton: {
+    backgroundColor: '#FF7675',
   },
   disabledButton: {
     opacity: 0.5,
   },
-  primaryText: {
-    color: '#FFFFFF',
+  baseText: {
     fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
+  primaryText: {
+    color: '#18181B',
   },
   secondaryText: {
-    color: Colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF',
   },
   outlineText: {
-    color: Colors.accentPrimary,
+    color: '#18181B',
+  },
+  dangerText: {
+    color: '#FFFFFF',
   },
   disabledText: {
     color: Colors.textMuted,

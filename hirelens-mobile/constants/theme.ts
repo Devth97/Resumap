@@ -1,44 +1,61 @@
 export const Colors = {
-  background: '#090D16',
-  cardBackground: '#131B2E',
-  cardBorder: 'rgba(99, 102, 241, 0.25)',
-  cardBorderGlow: '#6366F1',
-  textPrimary: '#F8FAFC',
-  textSecondary: '#94A3B8',
+  // Neo-Brutalism Canvas & Palette
+  background: '#FAF7F0',
+  cardBackground: '#FFFFFF',
+  cardBorder: '#18181B',
+  cardBorderGlow: '#6C5CE7',
+
+  // Neo-Brutalist Accent Fills
+  accentPrimary: '#6C5CE7',   // Electric Purple / Violet
+  accentSecondary: '#FFD93D', // Canary Yellow
+  accentPink: '#FF7675',      // Vibrant Coral Pink
+  accentCyan: '#00CEC9',      // Bright Turquoise Cyan
+  accentMint: '#00B894',      // Fresh Mint Green
+
+  // Text Tokens
+  textPrimary: '#18181B',
+  textSecondary: '#475569',
   textMuted: '#64748B',
 
-  accentPrimary: '#6366F1', // Neon Violet
-  accentSecondary: '#06B6D4', // Electric Cyan
-  accentGradient: ['#6366F1', '#06B6D4'] as const,
+  // Indicator States
+  success: '#00B894',
+  warning: '#FFD93D',
+  danger: '#FF7675',
 
-  success: '#10B981', // Emerald
-  warning: '#F59E0B', // Amber
-  danger: '#EF4444', // Red
+  // Score Gauge Colors
+  scoreGaugeHigh: '#00B894',
+  scoreGaugeMid: '#FFD93D',
+  scoreGaugeLow: '#FF7675',
 
-  scoreGaugeTrack: 'rgba(255, 255, 255, 0.08)',
-  scoreGaugeHigh: '#10B981',
-  scoreGaugeMid: '#F59E0B',
-  scoreGaugeLow: '#EF4444',
+  // Badges & Overlay
+  badgeBackground: '#FFD93D',
+  badgeText: '#18181B',
 
-  badgeBackground: 'rgba(99, 102, 241, 0.15)',
-  badgeText: '#818CF8',
-
-  glassBackground: 'rgba(19, 27, 46, 0.85)',
+  // Gradient helper
+  accentGradient: ['#6C5CE7', '#818CF8'] as const,
 };
 
 export const Shadows = {
-  glow: {
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
-  },
+  // Neo-Brutalist 3D Offset Drop Shadows
   card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowColor: '#18181B',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 5,
+  },
+  button: {
+    shadowColor: '#18181B',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+  },
+  glow: {
+    shadowColor: '#18181B',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 6,
   },
 };
