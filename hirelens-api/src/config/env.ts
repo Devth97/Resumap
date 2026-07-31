@@ -7,7 +7,7 @@ const envSchema = z.object({
 
   NVIDIA_API_KEY: z.string().optional(),
   NVIDIA_BASE_URL: z.string().default('https://integrate.api.nvidia.com/v1'),
-  NVIDIA_LLM_MODEL: z.string().default('meta/llama-3.3-70b-instruct'),
+  NVIDIA_LLM_MODEL: z.string().default('z-ai/glm-5.2'),
   NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-ocr-v2'),
 
   SUPABASE_URL: z.string().optional(),

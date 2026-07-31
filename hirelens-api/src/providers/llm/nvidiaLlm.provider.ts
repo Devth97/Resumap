@@ -34,16 +34,30 @@ export class NvidiaLlmProvider {
 
     try {
       const completion = await retryWithBackoff(async () => {
-        return await client.chat.completions.create({
-          model: config.NVIDIA_LLM_MODEL,
-          temperature: 0.1,
-          top_p: 0.7,
-          max_tokens: 4000,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: promptContent },
-          ],
-        });
+        try {
+          return await client.chat.completions.create({
+            model: config.NVIDIA_LLM_MODEL, // Primary: z-ai/glm-5.2
+            temperature: 0.1,
+            top_p: 0.7,
+            max_tokens: 4000,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: promptContent },
+            ],
+          });
+        } catch (primaryErr) {
+          // Fallback to meta/llama-3.3-70b-instruct if primary model is unavailable
+          return await client.chat.completions.create({
+            model: 'meta/llama-3.3-70b-instruct',
+            temperature: 0.1,
+            top_p: 0.7,
+            max_tokens: 4000,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: promptContent },
+            ],
+          });
+        }
       }, 2, 2000);
 
       const rawResponse = completion.choices[0]?.message?.content || '';
