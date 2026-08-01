@@ -67,12 +67,28 @@ export class NvidiaLlmProvider {
       }
 
       return {
-        signals: parsedSignals,
+        signals: this.normalizeDimensions(parsedSignals),
         latencyMs: Date.now() - startTime,
       };
     } catch (err: any) {
       throw new Error(`NVIDIA LLM analysis failed: ${err?.message || 'Unknown error'}`);
     }
+  }
+
+  // The model sometimes returns dimension scores as 0-1 fractions instead of
+  // the expected 0-100 integers, which collapses the weighted score to ~1.
+  // Rescale defensively so the scoring math is always on a 0-100 basis.
+  private static normalizeDimensions(signals: AnalysisSignals): AnalysisSignals {
+    const fix = (v: number) => {
+      if (typeof v !== 'number' || !isFinite(v)) return 0;
+      const scaled = v > 0 && v <= 1 ? v * 100 : v;
+      return Math.round(Math.min(100, Math.max(0, scaled)));
+    };
+    const rd = signals.resumeDimensions as Record<string, number>;
+    for (const k of Object.keys(rd)) rd[k] = fix(rd[k]);
+    const rad = signals.readinessDimensions as Record<string, number>;
+    for (const k of Object.keys(rad)) rad[k] = fix(rad[k]);
+    return signals;
   }
 
   private static async repairJson(invalidJson: string, client: OpenAI): Promise<AnalysisSignals> {
