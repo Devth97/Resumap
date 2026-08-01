@@ -4,19 +4,27 @@ import { SYSTEM_PROMPT, buildAnalysisPrompt } from '../../prompts/resumeAnalysis
 import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repairJson.prompt';
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
-import { retryWithBackoff } from '../../utilities/retry';
+
+// Fast hosted NIM model. The whole analysis must finish inside Vercel's 60s
+// serverless cap, and a 120B model (nemotron-3-super) routinely takes 40-90s
+// on its own, so we drive analysis with a fast model regardless of the
+// NVIDIA_LLM_MODEL env var (which may point at a slow model).
+const FAST_MODEL = 'deepseek-ai/deepseek-v4-flash';
+// Only attempt the extra JSON-repair round-trip if we still have budget under
+// the 60s function cap; otherwise fail cleanly instead of timing out.
+const REPAIR_BUDGET_MS = 35_000;
 
 export class NvidiaLlmProvider {
   // Vercel Hobby serverless functions hard-cap at 60s. Keep every LLM call
   // well under that: maxRetries 0 (the SDK silently retries up to 2x with
-  // backoff otherwise) and a hard 50s client timeout so a slow generation
-  // fails fast instead of blowing the function timeout.
+  // backoff otherwise) and a hard client timeout so a slow generation fails
+  // fast instead of blowing the function timeout.
   private static getClient(): OpenAI {
     return new OpenAI({
       apiKey: config.NVIDIA_API_KEY || 'mock-key',
       baseURL: config.NVIDIA_BASE_URL,
       maxRetries: 0,
-      timeout: 50_000,
+      timeout: 45_000,
     });
   }
 
@@ -35,32 +43,18 @@ export class NvidiaLlmProvider {
     const promptContent = buildAnalysisPrompt(redactedText, roleProfile, questionnaire);
 
     try {
-      const completion = await retryWithBackoff(async () => {
-        try {
-          return await client.chat.completions.create({
-            model: config.NVIDIA_LLM_MODEL,
-            temperature: 0.1,
-            top_p: 0.7,
-            max_tokens: 4000,
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: promptContent },
-            ],
-          });
-        } catch (primaryErr) {
-          // Fallback to a fast hosted model if primary model is unavailable
-          return await client.chat.completions.create({
-            model: 'deepseek-ai/deepseek-v4-flash',
-            temperature: 0.1,
-            top_p: 0.7,
-            max_tokens: 4000,
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: promptContent },
-            ],
-          });
-        }
-      }, 1, 1500);
+      // Single fast generation, no retry — retries/slow fallbacks stack up and
+      // blow the 60s function cap.
+      const completion = await client.chat.completions.create({
+        model: FAST_MODEL,
+        temperature: 0.1,
+        top_p: 0.7,
+        max_tokens: 2500,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: promptContent },
+        ],
+      });
 
       const rawResponse = completion.choices[0]?.message?.content || '';
       const cleanJson = this.stripMarkdownWrappers(rawResponse);
@@ -71,7 +65,10 @@ export class NvidiaLlmProvider {
         const jsonObj = JSON.parse(cleanJson);
         parsedSignals = AnalysisSignalSchema.parse(jsonObj);
       } catch (firstErr) {
-        // Run 1 JSON repair attempt
+        // One repair round-trip, but only if we still have time budget.
+        if (Date.now() - startTime > REPAIR_BUDGET_MS) {
+          throw firstErr;
+        }
         parsedSignals = await this.repairJson(cleanJson, client);
       }
 
@@ -91,7 +88,7 @@ export class NvidiaLlmProvider {
     );
 
     const completion = await client.chat.completions.create({
-      model: config.NVIDIA_LLM_MODEL,
+      model: FAST_MODEL,
       temperature: 0.0,
       max_tokens: 2500,
       messages: [
