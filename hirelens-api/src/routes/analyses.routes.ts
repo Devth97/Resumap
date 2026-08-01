@@ -94,6 +94,8 @@ export async function analysisRoutes(fastify: FastifyInstance) {
           confidence: signals.confidence,
           confidenceExplanation: signals.confidenceExplanation,
           disclaimer: 'This AI career analysis is tailored guidance for student readiness and does not guarantee employment, interviews, or selection.',
+          // Include raw resume text for ATS resume generation
+          rawResumeText: extraction.redactedText,
         };
 
       record.analysisSignalsJson = signals;

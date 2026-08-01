@@ -30,6 +30,73 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
 
   // Extract the REAL candidate details pulled from the uploaded resume by the AI.
   const profile = analysisResult?.candidateProfile || {};
+  const rawResumeText = analysisResult?.rawResumeText || '';
+  
+  // Extract candidate name from raw resume text (first non-empty line that looks like a name)
+  const extractCandidateName = (text: string): string => {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    for (const line of lines.slice(0, 5)) {
+      // Skip common resume headers
+      if (line.toLowerCase().includes('resume') || 
+          line.toLowerCase().includes('curriculum') ||
+          line.toLowerCase().includes('cv') ||
+          line.includes('@') ||
+          line.match(/^[\d\s\-\+\(\)]{8,}$/)) continue;
+      // Name-like: 2-4 words, letters/spaces/dots/hyphens only, reasonable length
+      if (line.match(/^[A-Za-z\.\-\s]{2,50}$/) && line.split(/\s+/).length >= 2 && line.split(/\s+/).length <= 4) {
+        return line;
+      }
+    }
+    return 'Your Name';
+  };
+
+  // Extract contact info (email, phone, LinkedIn, GitHub) from raw resume text
+  const extractContactInfo = (text: string): string => {
+    const parts: string[] = [];
+    const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    if (emailMatch) parts.push(emailMatch[0]);
+    const phoneMatch = text.match(/(?:\+?\d{1,4}[\s.-]?)?(?:\(?\d{2,5}\)?[\s.-]?)?\d{3,5}[\s.-]?\d{3,5}/);
+    if (phoneMatch) {
+      const digits = phoneMatch[0].replace(/\D/g, '');
+      if (digits.length >= 8 && digits.length <= 15) parts.push(phoneMatch[0].trim());
+    }
+    const linkedinMatch = text.match(/linkedin\.com\/in\/[a-zA-Z0-9\-_]+/i);
+    if (linkedinMatch) parts.push(linkedinMatch[0]);
+    const githubMatch = text.match(/github\.com\/[a-zA-Z0-9\-_]+/i);
+    if (githubMatch) parts.push(githubMatch[0]);
+    return parts.length > 0 ? parts.join(' • ') : 'Add your phone • email • LinkedIn • GitHub';
+  };
+
+  // Extract detailed education from raw resume text
+  const extractEducation = (text: string, fallback: string): string => {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const educationKeywords = ['education', 'degree', 'university', 'college', 'institute', 'b.tech', 'm.tech', 'b.sc', 'm.sc', 'bca', 'mca', 'bba', 'mba', 'phd', 'bachelor', 'master', 'diploma'];
+    let inEducationSection = false;
+    const educationLines: string[] = [];
+    
+    for (const line of lines) {
+      const lowerLine = line.toLowerCase();
+      if (educationKeywords.some(k => lowerLine === k || lowerLine.startsWith(k + ':') || lowerLine.startsWith(k + ' '))) {
+        inEducationSection = true;
+        continue;
+      }
+      if (inEducationSection) {
+        // Stop at next major section
+        if (lowerLine.match(/^(experience|projects|skills|certifications|internships|achievements|publications)/i)) {
+          break;
+        }
+        if (line.length > 2) educationLines.push(line);
+      }
+    }
+    
+    if (educationLines.length > 0) {
+      return educationLines.slice(0, 3).join(' | ');
+    }
+    return fallback;
+  };
+
+  const candidateName = extractCandidateName(rawResumeText);
+  const contactInfo = extractContactInfo(rawResumeText);
   const detectedSkills: string[] = (profile.detectedSkills || [])
     .map((s: any) => s?.skillName || s?.name || s)
     .filter(Boolean);
@@ -40,10 +107,10 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     ? profile.detectedTools.join(', ')
     : 'Add tools & platforms you have used';
   const rawEducation = profile.educationSummary;
-  const education =
+  const education = extractEducation(rawResumeText, 
     rawEducation && rawEducation.toLowerCase() !== 'not provided'
       ? rawEducation
-      : 'Add your degree, institution and graduation year';
+      : 'Add your degree, institution and graduation year');
   const realProjects: any[] = profile.projects || [];
   const improvements = analysisResult?.resumeImprovements || [];
   const strengths = analysisResult?.strengths || [];
@@ -216,9 +283,9 @@ const htmlContent = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>${esc(profile.candidateName || 'Your Name')}</h1>
+  <h1>${esc(candidateName)}</h1>
   <div class="contact-info">
-    ${esc(profile.contactInfo || 'Add your phone • email • LinkedIn • GitHub')}
+    ${esc(contactInfo)}
   </div>
 
   <div class="section-title">PROFESSIONAL SUMMARY</div>
@@ -291,9 +358,9 @@ const htmlContent = `<!DOCTYPE html>
             <View style={styles.resumePaper}>
               {/* Header */}
               <View style={styles.resumeHeader}>
-                <Text style={styles.candidateName}>{profile.candidateName || 'Your Name'}</Text>
+                <Text style={styles.candidateName}>{candidateName}</Text>
                 <Text style={styles.contactDetails}>
-                  {profile.contactInfo || 'Add your phone • email • LinkedIn • GitHub'}
+                  {contactInfo}
                 </Text>
               </View>
 
