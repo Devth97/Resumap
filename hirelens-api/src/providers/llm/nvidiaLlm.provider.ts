@@ -5,15 +5,13 @@ import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repa
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
 
-// Real, reliably-served, FAST NVIDIA NIM model. Must finish well inside
-// Vercel's 60s cap. We pin a known-good small model here rather than trusting
-// NVIDIA_LLM_MODEL, which has been set to non-existent models (HTTP 529) or
-// 120B models too slow for the cap. 8B is a few seconds per call, leaving room
-// for a JSON-repair pass without risking a function timeout.
-const FAST_MODEL = 'meta/llama-3.1-8b-instruct';
-// Only attempt the extra JSON-repair round-trip if we still have budget under
-// the 60s function cap; otherwise fail cleanly instead of timing out.
-const REPAIR_BUDGET_MS = 35_000;
+// Real, reliably-served NVIDIA NIM model. On Vercel Pro (300s cap) we use the
+// stronger 70B model for higher-quality analysis and more reliable JSON. We
+// pin a known-good model here rather than trusting NVIDIA_LLM_MODEL, which has
+// been set to non-existent models (HTTP 529).
+const FAST_MODEL = 'meta/llama-3.3-70b-instruct';
+// Budget before giving up on a second (retry) generation. Generous on Pro.
+const REPAIR_BUDGET_MS = 180_000;
 
 export class NvidiaLlmProvider {
   // Vercel Hobby serverless functions hard-cap at 60s. Keep every LLM call
@@ -25,7 +23,7 @@ export class NvidiaLlmProvider {
       apiKey: config.NVIDIA_API_KEY || 'mock-key',
       baseURL: config.NVIDIA_BASE_URL,
       maxRetries: 0,
-      timeout: 45_000,
+      timeout: 120_000,
     });
   }
 
@@ -125,7 +123,7 @@ export class NvidiaLlmProvider {
     messages: Array<{ role: 'system' | 'user'; content: string }>,
     temperature: number
   ) {
-    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 3000, messages };
+    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 4000, messages };
     try {
       return await client.chat.completions.create(base);
     } catch (err: any) {

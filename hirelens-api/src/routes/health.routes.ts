@@ -5,7 +5,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     return reply.send({
       status: 'ok',
       version: '1.0.0',
-      build: 'retry-json-1',
+      build: 'pro-70b-1',
       timestamp: new Date().toISOString(),
     });
   });

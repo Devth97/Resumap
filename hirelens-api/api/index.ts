@@ -1,8 +1,8 @@
 import { buildApp } from '../src/app';
 
-// Allow up to 60s so the synchronous NVIDIA LLM analysis can finish before
-// Vercel terminates the serverless function.
-export const config = { maxDuration: 60 };
+// Vercel Pro allows up to 300s. Gives the synchronous NVIDIA LLM analysis
+// ample room to finish (even with the larger 70B model + a retry).
+export const config = { maxDuration: 300 };
 
 const app = buildApp();
 
