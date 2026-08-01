@@ -64,7 +64,7 @@ export class NvidiaOcrProvider {
 
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`NVIDIA OCR error ${res.status}: ${errText}`);
+          throw new Error(`NVIDIA OCR error ${res.status} from ${config.NVIDIA_BASE_URL}/chat/completions: ${errText}`);
         }
 
         return res.json();
