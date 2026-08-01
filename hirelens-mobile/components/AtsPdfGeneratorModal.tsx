@@ -39,10 +39,25 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
   const tools = profile.detectedTools?.length
     ? profile.detectedTools.join(', ')
     : 'Add tools & platforms you have used';
-  const education = profile.educationSummary || 'Add your degree, institution and graduation year';
+  const rawEducation = profile.educationSummary;
+  const education =
+    rawEducation && rawEducation.toLowerCase() !== 'not provided'
+      ? rawEducation
+      : 'Add your degree, institution and graduation year';
   const realProjects: any[] = profile.projects || [];
   const improvements = analysisResult?.resumeImprovements || [];
   const strengths = analysisResult?.strengths || [];
+
+  // A concise, ATS-friendly professional summary generated from the resume data.
+  const levelLabel =
+    profile.experienceLevel === 'recent_graduate'
+      ? 'Recent graduate'
+      : profile.experienceLevel === 'entry_level'
+      ? 'Entry-level professional'
+      : 'Motivated student';
+  const summary = `${levelLabel} targeting ${targetRoleName} roles, with hands-on exposure to ${
+    detectedSkills.slice(0, 4).join(', ') || 'core technical skills'
+  }. Focused on building practical, results-driven projects with measurable impact.`;
 
   const esc = (s: any) =>
     String(s ?? '')
@@ -171,6 +186,10 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
       font-style: italic;
       margin-bottom: 6px;
     }
+    p {
+      font-size: 11px;
+      margin: 4px 0 10px 0;
+    }
     ul {
       margin: 4px 0 10px 18px;
       padding: 0;
@@ -202,37 +221,29 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     Add your phone &bull; email &bull; LinkedIn &bull; GitHub (removed here for privacy)
   </div>
 
+  <div class="section-title">PROFESSIONAL SUMMARY</div>
+  <p>${esc(summary)}</p>
+
   <div class="section-title">EDUCATION</div>
   <div class="entry-header">
     <span>${esc(education)}</span>
   </div>
 
-  <div class="section-title">TECHNICAL SKILLS & TOOLS</div>
+  <div class="section-title">TECHNICAL SKILLS</div>
   <ul>
-    <li><strong>Core Technical Skills:</strong> ${esc(skills)}</li>
-    <li><strong>Tools & Platforms:</strong> ${esc(tools)}</li>
+    <li><strong>Core Skills:</strong> ${esc(skills)}</li>
+    <li><strong>Tools &amp; Platforms:</strong> ${esc(tools)}</li>
   </ul>
 
-  <div class="section-title">AI-QUANTIFIED PROJECTS (${esc(targetRoleName.toUpperCase())})</div>
+  <div class="section-title">PROJECTS</div>
   ${projectsHtml}
 
   ${
     strengths.length
-      ? `<div class="section-title">CORE COMPETENCIES & STRENGTHS</div>
+      ? `<div class="section-title">KEY STRENGTHS</div>
   <ul>
     ${strengths
       .map((str: any) => `<li><strong>${esc(str.title)}:</strong> ${esc(str.explanation || str.relevance)}</li>`)
-      .join('')}
-  </ul>`
-      : ''
-  }
-
-  ${
-    improvements.length
-      ? `<div class="section-title">AI ATS OPTIMIZATION NOTES</div>
-  <ul>
-    ${improvements
-      .map((imp: any) => `<li>${esc(imp.recommendation || imp.issue || '')}</li>`)
       .join('')}
   </ul>`
       : ''
