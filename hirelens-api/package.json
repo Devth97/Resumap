@@ -4,7 +4,7 @@
   "description": "HireLens AI Resume and Job-Readiness Analyzer API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "node node_modules/typescript/bin/tsc && cd ../hirelens-mobile && npm install && node node_modules/expo/bin/cli export --platform web",
+    "build": "node node_modules/typescript/bin/tsc && cd ../hirelens-mobile && npm install --include=dev && node node_modules/expo/bin/cli export --platform web",
     "build:api": "node node_modules/typescript/bin/tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
@@ -23,13 +23,13 @@
     "pino-pretty": "^11.2.1",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.4",
-    "typescript": "^5.5.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
     "@types/pdf-parse": "^1.1.4",
     "tsx": "^4.16.2",
+    "typescript": "^5.5.2",
     "vitest": "^1.6.0"
   }
 }

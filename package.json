@@ -4,7 +4,7 @@
   "description": "ResuMap - AI-powered resume analysis platform",
   "private": true,
   "scripts": {
-    "build": "cd hirelens-api && npm install && npm run build",
+    "build": "cd hirelens-api && npm install --include=dev && npm run build",
     "dev:api": "cd hirelens-api && npm run dev",
     "dev:mobile": "cd hirelens-mobile && npm run dev",
     "test": "cd hirelens-api && npm test"
