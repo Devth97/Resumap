@@ -19,10 +19,85 @@ You must follow these rules:
 7. Use constructive and student-friendly language.
 8. Recommend realistic actions based on the student's available weekly time.
 9. Never guarantee employment, interviews, salary or selection.
-10. Return valid JSON matching the supplied schema.
-11. Do not include markdown or code block wrappers (e.g. do NOT wrap output in \`\`\`json).
-12. Do not calculate the final weighted total score. Return dimension signals for backend calculation.
+ 10. Return valid JSON matching the supplied outputSchema.
+ 11. Do not include markdown or code block wrappers (e.g. do NOT wrap output in \`\`\`json).
+ 12. Do not calculate the final weighted total score. Return dimension signals for backend calculation.
+ 13. Be concise: keep every string field under 20 words. evidenceQuote must be a short direct quote from the resume (or null when absent).
 `.trim();
+
+// JSON shape the LLM must return. Kept in sync with AnalysisSignalSchema in
+// ../schemas/analysis.schema.ts. Sent inside the prompt so the first LLM call
+// produces the correct shape (avoids the slower parse-and-repair round trip).
+export const ANALYSIS_OUTPUT_SCHEMA = {
+  candidateProfile: {
+    educationSummary: 'string',
+    experienceLevel: 'student | recent_graduate | entry_level | unknown',
+    detectedSkills: [
+      {
+        skillId: 'string',
+        skillName: 'string',
+        evidenceLevel: 'absent | mentioned | practised | demonstrated | applied',
+        evidenceQuote: 'short direct quote from resume or null',
+        confidence: 0.9,
+      },
+    ],
+    detectedTools: ['string'],
+    projects: [
+      {
+        title: 'string',
+        summary: 'string',
+        tools: ['string'],
+        evidenceStrength: 'weak | moderate | strong',
+      },
+    ],
+  },
+  resumeDimensions: {
+    roleRelevance: 0,
+    skillAlignment: 0,
+    evidenceQuality: 0,
+    projectClarity: 0,
+    structureReadability: 0,
+    languageQuality: 0,
+  },
+  readinessDimensions: {
+    projectEvidence: 0,
+    practicalExperience: 0,
+    communicationEvidence: 0,
+  },
+  strengths: [{ title: 'string', explanation: 'string', evidenceQuote: 'string', relevance: 'string' }],
+  gaps: [
+    {
+      skillId: 'string',
+      title: 'string',
+      priority: 'high | medium | low',
+      reason: 'string',
+      currentEvidence: 'string',
+      nextAction: 'string',
+      completionEvidence: 'string',
+    },
+  ],
+  resumeImprovements: [
+    { category: 'content | structure | language', issue: 'string', recommendation: 'string', example: 'string or null' },
+  ],
+  roadmap: [
+    {
+      stage: 1,
+      title: 'string',
+      durationWeeks: 2,
+      objective: 'string',
+      actions: ['string'],
+      completionEvidence: 'string',
+    },
+  ],
+  immediateActions: ['string'],
+  confidence: 'high | medium | low',
+  confidenceExplanation: 'string',
+} as const;
+
+// Constraints on array sizes: strengths max 5, gaps max 8, roadmap EXACTLY 4
+// stages (stage numbers 1-4), immediateActions EXACTLY 3 items.
+export const OUTPUT_LENGTH_RULES =
+  'Roadmap must contain exactly 4 stages (stage numbers 1 to 4). immediateActions must contain exactly 3 short items. strengths max 5. gaps max 8.';
 
 export function buildAnalysisPrompt(
   redactedText: string,
@@ -41,5 +116,7 @@ export function buildAnalysisPrompt(
       redactedText,
     },
     questionnaire,
+    outputSchema: ANALYSIS_OUTPUT_SCHEMA,
+    outputLengthRules: OUTPUT_LENGTH_RULES,
   }, null, 2);
 }

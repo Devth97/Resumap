@@ -7,10 +7,16 @@ import { RoleProfile } from '../../schemas/roleProfile.schema';
 import { retryWithBackoff } from '../../utilities/retry';
 
 export class NvidiaLlmProvider {
+  // Vercel Hobby serverless functions hard-cap at 60s. Keep every LLM call
+  // well under that: maxRetries 0 (the SDK silently retries up to 2x with
+  // backoff otherwise) and a hard 50s client timeout so a slow generation
+  // fails fast instead of blowing the function timeout.
   private static getClient(): OpenAI {
     return new OpenAI({
       apiKey: config.NVIDIA_API_KEY || 'mock-key',
       baseURL: config.NVIDIA_BASE_URL,
+      maxRetries: 0,
+      timeout: 50_000,
     });
   }
 
@@ -32,7 +38,7 @@ export class NvidiaLlmProvider {
       const completion = await retryWithBackoff(async () => {
         try {
           return await client.chat.completions.create({
-            model: config.NVIDIA_LLM_MODEL, // Primary: z-ai/glm-5.2
+            model: config.NVIDIA_LLM_MODEL,
             temperature: 0.1,
             top_p: 0.7,
             max_tokens: 4000,
@@ -42,9 +48,9 @@ export class NvidiaLlmProvider {
             ],
           });
         } catch (primaryErr) {
-          // Fallback to meta/llama-3.3-70b-instruct if primary model is unavailable
+          // Fallback to a fast hosted model if primary model is unavailable
           return await client.chat.completions.create({
-            model: 'meta/llama-3.3-70b-instruct',
+            model: 'deepseek-ai/deepseek-v4-flash',
             temperature: 0.1,
             top_p: 0.7,
             max_tokens: 4000,
@@ -54,7 +60,7 @@ export class NvidiaLlmProvider {
             ],
           });
         }
-      }, 2, 2000);
+      }, 1, 1500);
 
       const rawResponse = completion.choices[0]?.message?.content || '';
       const cleanJson = this.stripMarkdownWrappers(rawResponse);
@@ -87,7 +93,7 @@ export class NvidiaLlmProvider {
     const completion = await client.chat.completions.create({
       model: config.NVIDIA_LLM_MODEL,
       temperature: 0.0,
-      max_tokens: 4000,
+      max_tokens: 2500,
       messages: [
         { role: 'system', content: REPAIR_JSON_SYSTEM_PROMPT },
         { role: 'user', content: repairPrompt },

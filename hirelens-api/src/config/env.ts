@@ -13,7 +13,7 @@ const envSchema = z.object({
       const url = value.replace(/\/+$/, '');
       return /\/v1$/.test(url) ? url : `${url}/v1`;
     }),
-  NVIDIA_LLM_MODEL: z.string().default('z-ai/glm-5.2'),
+  NVIDIA_LLM_MODEL: z.string().default('nvidia/nemotron-3-super-120b-a12b'),
   NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-parse'),
 
   SUPABASE_URL: z.string().optional(),
