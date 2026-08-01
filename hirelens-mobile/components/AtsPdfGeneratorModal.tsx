@@ -138,7 +138,7 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     setDownloaded(true);
 
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const htmlContent = `<!DOCTYPE html>
+const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -147,7 +147,7 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
-      color: #111111;
+      color: #1a1a2e;
       line-height: 1.5;
     }
     h1 {
@@ -160,14 +160,14 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     .contact-info {
       text-align: center;
       font-size: 11px;
-      color: #444444;
+      color: #5a5a5a;
       margin-bottom: 20px;
     }
     .section-title {
       font-size: 13px;
       font-weight: bold;
-      color: #222222;
-      border-bottom: 1.5px solid #111111;
+      color: #2d2d2d;
+      border-bottom: 1.5px solid #1a1a2e;
       padding-bottom: 2px;
       margin-top: 18px;
       margin-bottom: 8px;
@@ -182,7 +182,7 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     }
     .entry-sub {
       font-size: 11px;
-      color: #555555;
+      color: #666666;
       font-style: italic;
       margin-bottom: 6px;
     }
@@ -216,9 +216,9 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
   </style>
 </head>
 <body>
-  <h1>YOUR NAME</h1>
+  <h1>${esc(profile.candidateName || 'Your Name')}</h1>
   <div class="contact-info">
-    Add your phone &bull; email &bull; LinkedIn &bull; GitHub (removed here for privacy)
+    ${esc(profile.contactInfo || 'Add your phone • email • LinkedIn • GitHub')}
   </div>
 
   <div class="section-title">PROFESSIONAL SUMMARY</div>
@@ -232,7 +232,7 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
   <div class="section-title">TECHNICAL SKILLS</div>
   <ul>
     <li><strong>Core Skills:</strong> ${esc(skills)}</li>
-    <li><strong>Tools &amp; Platforms:</strong> ${esc(tools)}</li>
+    <li><strong>Tools & Platforms:</strong> ${esc(tools)}</li>
   </ul>
 
   <div class="section-title">PROJECTS</div>
@@ -291,9 +291,9 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
             <View style={styles.resumePaper}>
               {/* Header */}
               <View style={styles.resumeHeader}>
-                <Text style={styles.candidateName}>YOUR NAME</Text>
+                <Text style={styles.candidateName}>{profile.candidateName || 'Your Name'}</Text>
                 <Text style={styles.contactDetails}>
-                  Add your phone • email • LinkedIn (removed for privacy)
+                  {profile.contactInfo || 'Add your phone • email • LinkedIn • GitHub'}
                 </Text>
               </View>
 

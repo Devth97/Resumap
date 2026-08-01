@@ -3,7 +3,6 @@ import { FileValidationService } from '../services/fileValidation.service';
 import { PdfExtractionService } from '../services/pdfExtraction.service';
 import { ImageProcessingService } from '../services/imageProcessing.service';
 import { NvidiaOcrProvider } from '../providers/ocr/nvidiaOcr.provider';
-import { PiiRedactionService } from '../services/piiRedaction.service';
 import { ResumeExtractionRepository, ResumeExtractionRecord } from '../repositories/resumeExtraction.repository';
 import { CONSTANTS } from '../config/constants';
 import { cryptoRandomString } from '../utilities/hashing';
@@ -91,9 +90,6 @@ export async function resumeRoutes(fastify: FastifyInstance) {
       confidence = ocrResult.confidence;
     }
 
-    // 2. PII Redaction
-    const redacted = PiiRedactionService.redact(extractedText);
-
     // 3. Save Extraction Record
     const resumeId = `res_${cryptoRandomString(16)}`;
     const now = new Date();
@@ -104,9 +100,9 @@ export async function resumeRoutes(fastify: FastifyInstance) {
       sessionId: (request.headers['x-session-id'] as string) || 'sess_default',
       extractionMethod,
       pageCount,
-      characterCount: redacted.redactedText.length,
+      characterCount: extractedText.length,
       extractionConfidence: confidence,
-      redactedText: redacted.redactedText,
+      redactedText: extractedText,
       rawFileDeletedAt: now.toISOString(),
       createdAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
