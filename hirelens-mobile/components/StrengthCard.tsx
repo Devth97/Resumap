@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   quoteBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderLeftWidth: 3,
     borderLeftColor: Colors.success,
     padding: 8,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: Colors.textSecondary,
     fontStyle: 'italic',
   },
 });

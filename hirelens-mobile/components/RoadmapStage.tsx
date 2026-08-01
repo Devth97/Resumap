@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   evidenceBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(255, 217, 61, 0.18)',
     padding: 8,
     borderRadius: 8,
     borderLeftWidth: 3,
@@ -122,12 +122,12 @@ const styles = StyleSheet.create({
   },
   evidenceLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: Colors.accentSecondary,
+    fontWeight: '800',
+    color: '#B45309',
   },
   evidenceText: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
 });
