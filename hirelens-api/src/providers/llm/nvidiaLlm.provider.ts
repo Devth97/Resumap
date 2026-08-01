@@ -5,11 +5,12 @@ import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repa
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
 
-// Real, reliably-served NVIDIA NIM model that returns structured JSON well and
-// finishes inside Vercel's 60s cap. We pin a known-good model here rather than
-// trusting the NVIDIA_LLM_MODEL env var, which has been set to non-existent /
-// slow models (returning HTTP 529 "overloaded" or blowing the function cap).
-const FAST_MODEL = 'meta/llama-3.3-70b-instruct';
+// Real, reliably-served, FAST NVIDIA NIM model. Must finish well inside
+// Vercel's 60s cap. We pin a known-good small model here rather than trusting
+// NVIDIA_LLM_MODEL, which has been set to non-existent models (HTTP 529) or
+// 120B models too slow for the cap. 8B is a few seconds per call, leaving room
+// for a JSON-repair pass without risking a function timeout.
+const FAST_MODEL = 'meta/llama-3.1-8b-instruct';
 // Only attempt the extra JSON-repair round-trip if we still have budget under
 // the 60s function cap; otherwise fail cleanly instead of timing out.
 const REPAIR_BUDGET_MS = 35_000;
@@ -109,12 +110,19 @@ export class NvidiaLlmProvider {
       return await attempt(true);
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode;
-      // Transient overload (429/5xx incl. NVIDIA's 529): brief backoff, retry.
-      if (!status || status === 429 || status >= 500) {
-        await new Promise((r) => setTimeout(r, 1500));
+      // Fast 4xx param rejection (model doesn't accept response_format): retry
+      // immediately without JSON mode.
+      if (status && status >= 400 && status < 500 && status !== 429) {
+        return await attempt(false);
       }
-      // Retry without JSON mode (also covers models that reject response_format).
-      return await attempt(false);
+      // Transient server overload (429 / 5xx incl. NVIDIA's 529) fails fast, so
+      // one quick retry is safe. A timeout/network error has NO status — never
+      // retry those, or two slow calls stack past the 60s function cap.
+      if (status && (status === 429 || status >= 500)) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return await attempt(true);
+      }
+      throw err;
     }
   }
 
