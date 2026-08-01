@@ -115,6 +115,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
           code: record.errorCode,
           message: 'Analysis failed to complete.',
           userAction: 'Please retry the analysis.',
+          detail: String(err?.message || err).slice(0, 800),
         },
       });
     }
