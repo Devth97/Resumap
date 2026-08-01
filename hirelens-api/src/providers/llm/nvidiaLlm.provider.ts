@@ -5,13 +5,14 @@ import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repa
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
 
-// Real, reliably-served NVIDIA NIM model. On Vercel Pro (300s cap) we use the
-// stronger 70B model for higher-quality analysis and more reliable JSON. We
-// pin a known-good model here rather than trusting NVIDIA_LLM_MODEL, which has
-// been set to non-existent models (HTTP 529).
-const FAST_MODEL = 'meta/llama-3.3-70b-instruct';
-// Budget before giving up on a second (retry) generation. Generous on Pro.
-const REPAIR_BUDGET_MS = 180_000;
+// Real, reliably-served, FAST NVIDIA NIM model. NOTE: the free hosted NIM
+// endpoint drops the connection at ~79s, so large/slow models (70B) fail there
+// even though Vercel Pro allows 300s. 8B finishes in ~15-20s — the reliable
+// choice on this endpoint. Pinned here rather than trusting NVIDIA_LLM_MODEL,
+// which has been set to non-existent models (HTTP 529).
+const FAST_MODEL = 'meta/llama-3.1-8b-instruct';
+// Budget before giving up on a second (retry) generation.
+const REPAIR_BUDGET_MS = 40_000;
 
 export class NvidiaLlmProvider {
   // Vercel Hobby serverless functions hard-cap at 60s. Keep every LLM call
@@ -23,7 +24,7 @@ export class NvidiaLlmProvider {
       apiKey: config.NVIDIA_API_KEY || 'mock-key',
       baseURL: config.NVIDIA_BASE_URL,
       maxRetries: 0,
-      timeout: 120_000,
+      timeout: 70_000,
     });
   }
 
