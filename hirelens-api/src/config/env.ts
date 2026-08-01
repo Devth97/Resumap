@@ -6,7 +6,13 @@ const envSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
 
   NVIDIA_API_KEY: z.string().optional(),
-  NVIDIA_BASE_URL: z.string().default('https://integrate.api.nvidia.com/v1'),
+  NVIDIA_BASE_URL: z
+    .string()
+    .default('https://integrate.api.nvidia.com/v1')
+    .transform((value) => {
+      const url = value.replace(/\/+$/, '');
+      return /\/v1$/.test(url) ? url : `${url}/v1`;
+    }),
   NVIDIA_LLM_MODEL: z.string().default('z-ai/glm-5.2'),
   NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-ocr-v2'),
 
