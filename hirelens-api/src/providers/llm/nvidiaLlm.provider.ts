@@ -42,37 +42,45 @@ export class NvidiaLlmProvider {
 
     const client = this.getClient();
     const promptContent = buildAnalysisPrompt(redactedText, roleProfile, questionnaire);
+    const messages = [
+      { role: 'system' as const, content: SYSTEM_PROMPT },
+      { role: 'user' as const, content: promptContent },
+    ];
 
-    try {
-      // Single fast plain generation; parse + optional repair below.
-      const completion = await this.createJsonCompletion(client, [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: promptContent },
-      ], 0.1);
-
-      const rawResponse = completion.choices[0]?.message?.content || '';
-      const cleanJson = this.stripMarkdownWrappers(rawResponse);
-
-      let parsedSignals: AnalysisSignals;
-
+    // The 8B model on the shared NIM endpoint occasionally returns malformed or
+    // truncated JSON. A fresh regeneration is far more reliable than trying to
+    // LLM-repair a broken string. Attempt up to twice while time budget allows.
+    const MAX_ATTEMPTS = 2;
+    let lastErr: any;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        const jsonObj = JSON.parse(cleanJson);
-        parsedSignals = AnalysisSignalSchema.parse(jsonObj);
-      } catch (firstErr) {
-        // One repair round-trip, but only if we still have time budget.
-        if (Date.now() - startTime > REPAIR_BUDGET_MS) {
-          throw firstErr;
+        const completion = await this.createJsonCompletion(client, messages, 0.1);
+        const raw = completion.choices[0]?.message?.content || '';
+        const jsonStr = this.extractJson(raw);
+        const parsed = AnalysisSignalSchema.parse(JSON.parse(jsonStr));
+        return {
+          signals: this.normalizeDimensions(parsed),
+          latencyMs: Date.now() - startTime,
+        };
+      } catch (err: any) {
+        lastErr = err;
+        // Only retry if a second full generation still fits under the 60s cap.
+        if (attempt < MAX_ATTEMPTS && Date.now() - startTime < REPAIR_BUDGET_MS) {
+          continue;
         }
-        parsedSignals = await this.repairJson(cleanJson, client);
+        break;
       }
-
-      return {
-        signals: this.normalizeDimensions(parsedSignals),
-        latencyMs: Date.now() - startTime,
-      };
-    } catch (err: any) {
-      throw new Error(`NVIDIA LLM analysis failed: ${err?.message || 'Unknown error'}`);
     }
+    throw new Error(`NVIDIA LLM analysis failed: ${lastErr?.message || 'Unknown error'}`);
+  }
+
+  // Pull the JSON object out of a model response, tolerating prose or markdown
+  // fences around it.
+  private static extractJson(raw: string): string {
+    const s = this.stripMarkdownWrappers(raw);
+    const start = s.indexOf('{');
+    const end = s.lastIndexOf('}');
+    return start >= 0 && end > start ? s.slice(start, end + 1) : s;
   }
 
   // The model sometimes returns dimension scores as 0-1 fractions instead of
