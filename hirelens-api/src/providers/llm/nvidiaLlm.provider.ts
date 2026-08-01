@@ -44,9 +44,7 @@ export class NvidiaLlmProvider {
     const promptContent = buildAnalysisPrompt(redactedText, roleProfile, questionnaire);
 
     try {
-      // Single fast generation, no retry — retries/slow fallbacks stack up and
-      // blow the 60s function cap. Full max_tokens so the (large) analysis JSON
-      // is never truncated, and JSON mode so it parses on the first try.
+      // Single fast plain generation; parse + optional repair below.
       const completion = await this.createJsonCompletion(client, [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: promptContent },
@@ -93,34 +91,27 @@ export class NvidiaLlmProvider {
     return AnalysisSignalSchema.parse(jsonObj);
   }
 
-  // One fast generation on FAST_MODEL. Requests strict JSON mode for reliable
-  // parsing, but transparently retries once without it if the model/endpoint
-  // rejects the response_format param (some NIM models don't support it).
+  // One fast generation on FAST_MODEL. Plain generation (NO response_format):
+  // NVIDIA's guided-JSON decoding is grammar-constrained per token and is both
+  // slow (~60s) and prone to truncation on the large analysis schema. We rely
+  // on the prompt + stripMarkdownWrappers + a repair pass for valid JSON.
+  // A generous token ceiling avoids mid-object truncation.
   private static async createJsonCompletion(
     client: OpenAI,
     messages: Array<{ role: 'system' | 'user'; content: string }>,
     temperature: number
   ) {
-    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 4000, messages };
-    const attempt = (useJson: boolean) =>
-      client.chat.completions.create(
-        useJson ? ({ ...base, response_format: { type: 'json_object' } } as any) : base
-      );
+    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 6000, messages };
     try {
-      return await attempt(true);
+      return await client.chat.completions.create(base);
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode;
-      // Fast 4xx param rejection (model doesn't accept response_format): retry
-      // immediately without JSON mode.
-      if (status && status >= 400 && status < 500 && status !== 429) {
-        return await attempt(false);
-      }
       // Transient server overload (429 / 5xx incl. NVIDIA's 529) fails fast, so
       // one quick retry is safe. A timeout/network error has NO status — never
       // retry those, or two slow calls stack past the 60s function cap.
       if (status && (status === 429 || status >= 500)) {
         await new Promise((r) => setTimeout(r, 1200));
-        return await attempt(true);
+        return await client.chat.completions.create(base);
       }
       throw err;
     }
