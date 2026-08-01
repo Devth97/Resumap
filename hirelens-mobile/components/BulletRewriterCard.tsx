@@ -46,7 +46,7 @@ export const BulletRewriterCard: React.FC = () => {
       <TextInput
         style={styles.input}
         placeholder="e.g., Created a web app for college project using React..."
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor="rgba(255, 255, 255, 0.5)"
         value={inputBullet}
         onChangeText={setInputBullet}
         multiline
@@ -107,16 +107,16 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 17,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(99, 102, 241, 0.3)',
     borderRadius: 12,
     padding: 12,
-    color: Colors.textPrimary,
+    color: '#FFFFFF',
     fontSize: 13,
     minHeight: 64,
     textAlignVertical: 'top',
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   bulletText: {
     fontSize: 12,
-    color: Colors.textPrimary,
+    color: '#FFFFFF',
     lineHeight: 18,
   },
   copyButton: {
