@@ -1,10 +1,33 @@
 {
+  "version": 2,
   "buildCommand": "cd hirelens-api && npm install && npm run build",
-  "outputDirectory": "hirelens-api/dist",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "hirelens-mobile/dist"
+      }
+    },
+    {
+      "src": "hirelens-api/api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 60
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "hirelens-api/api/index.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
