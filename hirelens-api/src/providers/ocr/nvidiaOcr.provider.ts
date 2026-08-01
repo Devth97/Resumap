@@ -35,19 +35,12 @@ export class NvidiaOcrProvider {
 
       const requestBody = {
         model: config.NVIDIA_OCR_MODEL,
-        temperature: 0.1,
-        top_p: 0.7,
-        max_tokens: 4096,
+        temperature: 0,
+        tools: [{ type: 'function', function: { name: 'markdown_no_bbox' } }],
         messages: [
           {
             role: 'user',
-            content: [
-              ...imageContent,
-              {
-                type: 'text',
-                text: 'Extract all text from the provided resume image(s) verbatim. Preserve the original structure, section headings, bullet points, and line breaks. Do not add, summarize, or omit any content.',
-              },
-            ],
+            content: imageContent,
           },
         ],
       };
@@ -70,7 +63,26 @@ export class NvidiaOcrProvider {
         return res.json();
       }, 2, 2000);
 
-      const extractedText = (response?.choices?.[0]?.message?.content || '').trim();
+      const message = response?.choices?.[0]?.message || {};
+      let extractedText = (message.content || '').trim();
+
+      // Nemotron Parse returns extracted text in tool_calls[].function.arguments
+      if (!extractedText && Array.isArray(message.tool_calls)) {
+        const texts = message.tool_calls
+          .map((call: any) => {
+            try {
+              const parsed = JSON.parse(call.function?.arguments || '[]');
+              if (Array.isArray(parsed)) {
+                return parsed.map((item: any) => item.text).filter(Boolean).join('\n');
+              }
+              return parsed.text || '';
+            } catch {
+              return call.function?.arguments || '';
+            }
+          })
+          .filter(Boolean);
+        extractedText = texts.join('\n').trim();
+      }
 
       if (extractedText.length < CONSTANTS.MIN_EXTRACTED_CHARACTERS) {
         return {

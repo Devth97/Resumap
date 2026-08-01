@@ -14,7 +14,7 @@ const envSchema = z.object({
       return /\/v1$/.test(url) ? url : `${url}/v1`;
     }),
   NVIDIA_LLM_MODEL: z.string().default('z-ai/glm-5.2'),
-  NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-ocr-v2'),
+  NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-parse'),
 
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
