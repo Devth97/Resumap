@@ -44,17 +44,12 @@ export class NvidiaLlmProvider {
 
     try {
       // Single fast generation, no retry — retries/slow fallbacks stack up and
-      // blow the 60s function cap.
-      const completion = await client.chat.completions.create({
-        model: FAST_MODEL,
-        temperature: 0.1,
-        top_p: 0.7,
-        max_tokens: 2500,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: promptContent },
-        ],
-      });
+      // blow the 60s function cap. Full max_tokens so the (large) analysis JSON
+      // is never truncated, and JSON mode so it parses on the first try.
+      const completion = await this.createJsonCompletion(client, [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: promptContent },
+      ], 0.1);
 
       const rawResponse = completion.choices[0]?.message?.content || '';
       const cleanJson = this.stripMarkdownWrappers(rawResponse);
@@ -87,19 +82,33 @@ export class NvidiaLlmProvider {
       'AnalysisSignals schema with candidateProfile, resumeDimensions, readinessDimensions, strengths (max 5), gaps (max 8), resumeImprovements, roadmap (length 4), immediateActions (length 3)'
     );
 
-    const completion = await client.chat.completions.create({
-      model: FAST_MODEL,
-      temperature: 0.0,
-      max_tokens: 2500,
-      messages: [
-        { role: 'system', content: REPAIR_JSON_SYSTEM_PROMPT },
-        { role: 'user', content: repairPrompt },
-      ],
-    });
+    const completion = await this.createJsonCompletion(client, [
+      { role: 'system', content: REPAIR_JSON_SYSTEM_PROMPT },
+      { role: 'user', content: repairPrompt },
+    ], 0.0);
 
     const repairedText = this.stripMarkdownWrappers(completion.choices[0]?.message?.content || '');
     const jsonObj = JSON.parse(repairedText);
     return AnalysisSignalSchema.parse(jsonObj);
+  }
+
+  // One fast generation on FAST_MODEL. Requests strict JSON mode for reliable
+  // parsing, but transparently retries once without it if the model/endpoint
+  // rejects the response_format param (some NIM models don't support it).
+  private static async createJsonCompletion(
+    client: OpenAI,
+    messages: Array<{ role: 'system' | 'user'; content: string }>,
+    temperature: number
+  ) {
+    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 4000, messages };
+    try {
+      return await client.chat.completions.create({
+        ...base,
+        response_format: { type: 'json_object' },
+      } as any);
+    } catch (jsonModeErr) {
+      return await client.chat.completions.create(base);
+    }
   }
 
   private static stripMarkdownWrappers(raw: string): string {
