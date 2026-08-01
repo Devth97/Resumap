@@ -4,7 +4,7 @@
   "description": "HireLens AI Resume and Job-Readiness Analyzer API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "./node_modules/.bin/tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run"
