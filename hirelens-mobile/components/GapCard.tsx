@@ -37,7 +37,7 @@ export const GapCard: React.FC<{ gap: GapItem }> = ({ gap }) => {
               <Text
                 style={[
                   styles.badgeText,
-                  { color: isHigh ? Colors.danger : Colors.warning },
+                  { color: isHigh ? '#B91C1C' : '#92400E' },
                 ]}
               >
                 {gap.priority.toUpperCase()} PRIORITY

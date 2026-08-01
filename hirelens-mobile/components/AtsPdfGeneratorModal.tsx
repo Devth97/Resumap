@@ -10,6 +10,8 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { Colors, Shadows } from '../constants/theme';
 import { FileText, Download, Check, X, Printer } from 'lucide-react-native';
 
@@ -201,11 +203,30 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
     setTimeout(doPrint, 400);
   };
 
-  const handleDownload = () => {
+  // Generate a real PDF file on native and open the share/save sheet.
+  const generateNativePdf = async (html: string) => {
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Save your ATS Resume',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert('ATS Resume ready', `Saved to:\n${uri}`);
+      }
+    } catch (e: any) {
+      Alert.alert('Could not create PDF', e?.message || 'Please try again.');
+    } finally {
+      setDownloaded(false);
+    }
+  };
+
+  const handleDownload = async () => {
     setDownloaded(true);
 
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-const htmlContent = `<!DOCTYPE html>
+    const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -322,13 +343,10 @@ const htmlContent = `<!DOCTYPE html>
 </body>
 </html>`;
 
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
       printViaIframe(htmlContent);
     } else {
-      Alert.alert(
-        'ATS Resume Generated!',
-        `Your 1-page ATS-optimized resume for ${targetRoleName} has been generated.`,
-        [{ text: 'OK', onPress: () => setDownloaded(false) }]
-      );
+      await generateNativePdf(htmlContent);
     }
   };
 
@@ -428,7 +446,7 @@ const htmlContent = `<!DOCTYPE html>
             <TouchableOpacity style={styles.downloadBtn} onPress={handleDownload}>
               <Printer size={18} color="#18181B" />
               <Text style={styles.downloadBtnText}>
-                {downloaded ? 'Opening Print to PDF...' : 'Print / Download ATS PDF'}
+                {downloaded ? 'Preparing your PDF…' : 'Download ATS PDF'}
               </Text>
             </TouchableOpacity>
           </View>
