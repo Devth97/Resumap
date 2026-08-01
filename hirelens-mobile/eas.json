@@ -12,12 +12,19 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://resumap-tjv1.vercel.app/api/v1"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://resumap-tjv1.vercel.app/api/v1",
+        "EXPO_PUBLIC_USE_REAL_ADS": "true"
+      },
       "android": {
         "buildType": "app-bundle"
       }

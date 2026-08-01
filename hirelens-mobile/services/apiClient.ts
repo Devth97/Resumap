@@ -12,7 +12,9 @@ const getApiBaseUrl = (): string => {
     }
     return 'http://localhost:8080/api/v1';
   }
-  return 'http://192.168.1.5:8080/api/v1';
+  // Native builds (Android/iOS): default to the live production API. For local
+  // native dev against your machine, set EXPO_PUBLIC_API_BASE_URL instead.
+  return 'https://resumap-tjv1.vercel.app/api/v1';
 };
 
 export class ApiClient {

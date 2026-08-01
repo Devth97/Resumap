@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -9,6 +9,18 @@ import { FloatingMascot } from '../components/FloatingMascot';
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Initialize the Google Mobile Ads SDK on native platforms only.
+    if (Platform.OS !== 'web') {
+      try {
+        const mobileAds = require('react-native-google-mobile-ads').default;
+        mobileAds().initialize();
+      } catch (e) {
+        // SDK not present (e.g. Expo Go) — ads simply won't show.
+      }
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <View style={styles.container}>

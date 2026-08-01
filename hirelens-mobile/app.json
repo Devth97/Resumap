@@ -21,6 +21,7 @@
         "backgroundColor": "#FAF7F0"
       },
       "package": "in.ornalens.hirelens",
+      "versionCode": 1,
       "permissions": []
     },
     "web": {
@@ -28,7 +29,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-document-picker"
+      "expo-document-picker",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-7761261690953165~4823322506"
+        }
+      ]
     ]
   }
 }
