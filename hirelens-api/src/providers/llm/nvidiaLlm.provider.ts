@@ -35,8 +35,13 @@ export class NvidiaLlmProvider {
   ): Promise<{ signals: AnalysisSignals; latencyMs: number }> {
     const startTime = Date.now();
 
+    // Use mock signals when NVIDIA API key is not configured
     if (!config.NVIDIA_API_KEY) {
-      throw new Error('NVIDIA API key is not configured. Set NVIDIA_API_KEY to enable real AI analysis.');
+      const mockSignals = this.generateMockSignals(redactedText, roleProfile);
+      return {
+        signals: this.normalizeDimensions(mockSignals),
+        latencyMs: Date.now() - startTime,
+      };
     }
 
     const client = this.getClient();

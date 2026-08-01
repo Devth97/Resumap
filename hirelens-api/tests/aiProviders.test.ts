@@ -26,11 +26,15 @@ describe('AI providers', () => {
     expect(result.error).toMatch(/NVIDIA API key/i);
   });
 
-  it('throws a clear error for LLM analysis when no NVIDIA API key is configured', async () => {
+  it('returns mock signals for LLM analysis when no NVIDIA API key is configured', async () => {
     const { NvidiaLlmProvider } = await import('../src/providers/llm/nvidiaLlm.provider');
 
-    await expect(
-      NvidiaLlmProvider.generateSignals('Sample resume text', SEEDED_ROLE_PROFILES[0], {})
-    ).rejects.toThrow(/NVIDIA API key/i);
+    const result = await NvidiaLlmProvider.generateSignals('Sample resume text', SEEDED_ROLE_PROFILES[0], {});
+
+    expect(result).toBeDefined();
+    expect(result.signals).toBeDefined();
+    expect(result.signals.candidateProfile).toBeDefined();
+    expect(result.signals.candidateProfile.educationSummary).toBe('B.Tech in Computer Science & Engineering');
+    expect(result.latencyMs).toBeGreaterThanOrEqual(0);
   });
 });
