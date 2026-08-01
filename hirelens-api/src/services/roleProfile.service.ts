@@ -358,4 +358,80 @@ export class RoleProfileService {
     const role = SEEDED_ROLE_PROFILES.find((r) => r.id.toLowerCase() === id.toLowerCase());
     return role || null;
   }
+
+  /**
+   * Synthesize a generic RoleProfile for a user-specified custom target role that
+   * is not part of the seeded catalogue. Gives the scoring engine + LLM a valid
+   * profile to evaluate against, using broad professional competencies plus the
+   * role title so the analysis is tailored to the role the student typed.
+   */
+  public static buildCustomRole(rawId: string, title: string): RoleProfile {
+    const cleanTitle = (title || rawId || 'Custom Target Role').trim() || 'Custom Target Role';
+    const id =
+      (rawId || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')).replace(/^-+|-+$/g, '') ||
+      'custom-role';
+
+    return {
+      id,
+      title: cleanTitle,
+      version: 'custom-1.0.0',
+      description: `User-specified target role: ${cleanTitle}. Evaluated against general professional and technical expectations for this role.`,
+      entryLevelTitles: [cleanTitle, `Junior ${cleanTitle}`, `Associate ${cleanTitle}`],
+      requiredSkills: [
+        {
+          id: 'core-technical',
+          name: 'Core Technical Skills',
+          category: 'technical',
+          priority: 'required',
+          weight: 30,
+          aliases: ['programming', 'development', 'engineering', 'coding', 'technical', 'design'],
+          evidenceExamples: ['Hands-on technical project', 'Documented implementation'],
+          beginnerActions: [`Complete a foundational project relevant to a ${cleanTitle} role.`],
+        },
+        {
+          id: 'domain-tools',
+          name: 'Role-Specific Tools & Platforms',
+          category: 'tool',
+          priority: 'required',
+          weight: 25,
+          aliases: ['tools', 'platform', 'software', 'framework', 'stack'],
+          evidenceExamples: ['Project using industry-standard tools'],
+          beginnerActions: [`Learn the primary tools commonly used by a ${cleanTitle}.`],
+        },
+        {
+          id: 'applied-projects',
+          name: 'Applied Project Experience',
+          category: 'portfolio',
+          priority: 'required',
+          weight: 25,
+          aliases: ['project', 'portfolio', 'case study', 'built', 'implemented', 'developed'],
+          evidenceExamples: ['End-to-end portfolio project'],
+          beginnerActions: [`Build an end-to-end project that a ${cleanTitle} would typically deliver.`],
+        },
+        {
+          id: 'communication',
+          name: 'Professional Communication',
+          category: 'communication',
+          priority: 'required',
+          weight: 20,
+          aliases: ['communication', 'presentation', 'documentation', 'reporting', 'collaboration'],
+          evidenceExamples: ['Presentation deck', 'Written project report'],
+          beginnerActions: ['Write a clear one-page summary of a project and its impact.'],
+        },
+      ],
+      preferredSkills: [],
+      expectedProjects: [
+        {
+          title: `${cleanTitle} Portfolio Project`,
+          description: `A representative end-to-end project demonstrating core ${cleanTitle} competencies.`,
+          demonstratedSkills: ['Core Technical Skills', 'Applied Project Experience'],
+        },
+      ],
+      communicationExpectations: [
+        `Clearly explain ${cleanTitle} work and its impact to both technical and non-technical audiences.`,
+      ],
+      roadmapTemplates: [],
+      lastReviewedAt: new Date().toISOString().slice(0, 10),
+    };
+  }
 }

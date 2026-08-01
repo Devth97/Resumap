@@ -13,6 +13,7 @@ const createAnalysisSchema = z.object({
   sessionId: z.string(),
   resumeId: z.string(),
   roleId: z.string(),
+  roleTitle: z.string().optional(),
   questionnaire: QuestionnaireSchema,
 });
 
@@ -31,16 +32,11 @@ export async function analysisRoutes(fastify: FastifyInstance) {
       });
     }
 
-    const roleProfile = RoleProfileService.getRoleById(body.roleId);
-    if (!roleProfile) {
-      return reply.status(404).send({
-        error: {
-          code: CONSTANTS.ERROR_CODES.ROLE_NOT_FOUND,
-          message: `Role '${body.roleId}' not found.`,
-          userAction: 'Select a valid target role.',
-        },
-      });
-    }
+    // Use a seeded role profile when available; otherwise synthesize a generic
+    // profile for the user's custom / self-specified target role.
+    const roleProfile =
+      RoleProfileService.getRoleById(body.roleId) ||
+      RoleProfileService.buildCustomRole(body.roleId, body.roleTitle || body.roleId);
 
     const analysisId = `ana_${cryptoRandomString(16)}`;
     const now = new Date().toISOString();
@@ -71,12 +67,14 @@ export async function analysisRoutes(fastify: FastifyInstance) {
         const scoreResult = ScoringService.calculateScores(signals, roleProfile, body.questionnaire);
 
         const resultJson = {
+          targetRoleName: roleProfile.title,
           resumeQualityScore: scoreResult.resumeQualityScore,
           jobReadinessScore: scoreResult.jobReadinessScore,
           resumeScoreLabel: scoreResult.resumeScoreLabel,
           readinessLabel: scoreResult.readinessLabel,
           requiredSkillCoverage: scoreResult.requiredSkillCoverage,
           dimensionBreakdown: scoreResult.dimensionBreakdown,
+          candidateProfile: signals.candidateProfile,
           strengths: signals.strengths,
           gaps: signals.gaps,
           resumeImprovements: signals.resumeImprovements,

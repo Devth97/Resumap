@@ -28,12 +28,96 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
 }) => {
   const [downloaded, setDownloaded] = useState(false);
 
-  // Extract real candidate details if available
+  // Extract the REAL candidate details pulled from the uploaded resume by the AI.
   const profile = analysisResult?.candidateProfile || {};
-  const skills = profile.detectedSkills?.map((s: any) => s.skillName || s).join(', ') || 'Python, SQL, React, Git, JavaScript';
-  const tools = profile.detectedTools?.join(', ') || 'VS Code, Postman, GitHub';
+  const detectedSkills: string[] = (profile.detectedSkills || [])
+    .map((s: any) => s?.skillName || s?.name || s)
+    .filter(Boolean);
+  const skills = detectedSkills.length
+    ? detectedSkills.join(', ')
+    : 'Add your key technical skills';
+  const tools = profile.detectedTools?.length
+    ? profile.detectedTools.join(', ')
+    : 'Add tools & platforms you have used';
+  const education = profile.educationSummary || 'Add your degree, institution and graduation year';
+  const realProjects: any[] = profile.projects || [];
   const improvements = analysisResult?.resumeImprovements || [];
   const strengths = analysisResult?.strengths || [];
+
+  const esc = (s: any) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+  // Build the AI-quantified projects section from REAL extracted projects,
+  // falling back to the AI resume-improvement examples when none were detected.
+  const projectsHtml = realProjects.length
+    ? realProjects
+        .map(
+          (p: any) => `
+  <div class="entry-header">
+    <span>${esc(p.title || 'Project')}</span>
+    <span>${p.evidenceStrength ? esc(p.evidenceStrength) + ' evidence' : ''}</span>
+  </div>
+  <ul>
+    ${p.summary ? `<li>${esc(p.summary)}</li>` : ''}
+    ${p.tools?.length ? `<li><strong>Stack:</strong> ${esc(p.tools.join(', '))}</li>` : ''}
+  </ul>`
+        )
+        .join('')
+    : `
+  <div class="entry-header"><span>Portfolio Project</span><span></span></div>
+  <ul>
+    ${
+      improvements
+        .slice(0, 3)
+        .map((imp: any) => `<li>${esc(imp.example || imp.recommendation || '')}</li>`)
+        .join('') ||
+      '<li>Add a project demonstrating your target-role skills, with quantified impact.</li>'
+    }
+  </ul>`;
+
+  // Reliable web print-to-PDF: render into a hidden iframe and call print()
+  // on it. Avoids popup blockers and OS permission prompts entirely.
+  const printViaIframe = (html: string) => {
+    const existing = document.getElementById('ats-print-frame');
+    if (existing) existing.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'ats-print-frame';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const win = iframe.contentWindow;
+    const doc = iframe.contentWindow?.document;
+    if (!win || !doc) {
+      setDownloaded(false);
+      return;
+    }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const doPrint = () => {
+      try {
+        win.focus();
+        win.print();
+      } catch (e) {
+        // ignore
+      }
+      setDownloaded(false);
+    };
+
+    // Give the browser a moment to lay out the document before printing.
+    setTimeout(doPrint, 400);
+  };
 
   const handleDownload = () => {
     setDownloaded(true);
@@ -120,62 +204,47 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
 
   <div class="section-title">EDUCATION</div>
   <div class="entry-header">
-    <span>${profile.educationSummary || 'B.Tech in Computer Science & Engineering'}</span>
-    <span>2022 &ndash; 2026</span>
+    <span>${esc(education)}</span>
   </div>
-  <div class="entry-sub">Relevant Coursework: Data Structures, Operating Systems, Database Systems, Web Development</div>
 
   <div class="section-title">TECHNICAL SKILLS & TOOLS</div>
   <ul>
-    <li><strong>Core Technical Skills:</strong> ${skills}</li>
-    <li><strong>Tools & Platforms:</strong> ${tools}</li>
+    <li><strong>Core Technical Skills:</strong> ${esc(skills)}</li>
+    <li><strong>Tools & Platforms:</strong> ${esc(tools)}</li>
   </ul>
 
-  <div class="section-title">AI-QUANTIFIED PROJECTS (${targetRoleName.toUpperCase()})</div>
-  <div class="entry-header">
-    <span>Production Web & Data System</span>
-    <span>2025</span>
-  </div>
-  <ul>
-    <li>Engineered responsive web portal serving 2,500+ users, reducing page render latency by 35%.</li>
-    <li>Analyzed 15,000+ transaction records utilizing SQL window functions to surface key performance trends.</li>
-    ${improvements.map((imp: any) => `<li>${imp.example || imp.recommendation || ''}</li>`).join('')}
-  </ul>
+  <div class="section-title">AI-QUANTIFIED PROJECTS (${esc(targetRoleName.toUpperCase())})</div>
+  ${projectsHtml}
 
-  <div class="section-title">CORE COMPETENCIES & STRENGTHS</div>
+  ${
+    strengths.length
+      ? `<div class="section-title">CORE COMPETENCIES & STRENGTHS</div>
   <ul>
-    ${strengths.map((str: any) => `<li><strong>${str.title}:</strong> ${str.explanation || str.relevance}</li>`).join('')}
-  </ul>
+    ${strengths
+      .map((str: any) => `<li><strong>${esc(str.title)}:</strong> ${esc(str.explanation || str.relevance)}</li>`)
+      .join('')}
+  </ul>`
+      : ''
+  }
+
+  ${
+    improvements.length
+      ? `<div class="section-title">AI ATS OPTIMIZATION NOTES</div>
+  <ul>
+    ${improvements
+      .map((imp: any) => `<li>${esc(imp.recommendation || imp.issue || '')}</li>`)
+      .join('')}
+  </ul>`
+      : ''
+  }
 
   <div class="ats-badge">
     &check; 100% Single-Column ATS Scanner Verified Format (Workday, Taleo, Greenhouse)
   </div>
-
-  <script>
-    // Automatically open print dialog for 1-click PDF download
-    window.onload = function() {
-      setTimeout(function() { window.print(); }, 500);
-    };
-  </script>
 </body>
 </html>`;
 
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-      } else {
-        // Fallback file download as .html ATS Document
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Resumap_${targetRoleName.replace(/\s+/g, '_')}_ATS_Resume.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
+      printViaIframe(htmlContent);
     } else {
       Alert.alert(
         'ATS Resume Generated!',
@@ -211,9 +280,9 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
             <View style={styles.resumePaper}>
               {/* Header */}
               <View style={styles.resumeHeader}>
-                <Text style={styles.candidateName}>CANDIDATE NAME</Text>
+                <Text style={styles.candidateName}>YOUR NAME</Text>
                 <Text style={styles.contactDetails}>
-                  City, State • email@example.com • linkedin.com/in/candidate
+                  Add your phone • email • LinkedIn (removed for privacy)
                 </Text>
               </View>
 
@@ -222,10 +291,8 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
                 <Text style={styles.sectionHeading}>EDUCATION</Text>
                 <View style={styles.sectionDivider} />
                 <View style={styles.entryRow}>
-                  <Text style={styles.entryTitle}>{profile.educationSummary || 'B.Tech in Computer Science & Engineering'}</Text>
-                  <Text style={styles.entryDate}>2022 - 2026</Text>
+                  <Text style={styles.entryTitle}>{education}</Text>
                 </View>
-                <Text style={styles.entrySub}>Relevant Coursework: Data Structures, Database Systems, Web Development</Text>
               </View>
 
               {/* Skills */}
@@ -242,16 +309,32 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
               <View style={styles.resumeSection}>
                 <Text style={styles.sectionHeading}>AI-QUANTIFIED PROJECTS ({targetRoleName.toUpperCase()})</Text>
                 <View style={styles.sectionDivider} />
-                <View style={styles.entryRow}>
-                  <Text style={styles.entryTitle}>Production Web & Data System</Text>
-                  <Text style={styles.entryDate}>2025</Text>
-                </View>
-                <Text style={styles.bulletItem}>
-                  • Engineered responsive web reporting portal for 2,500+ users, cutting query load time by 35%.
-                </Text>
-                <Text style={styles.bulletItem}>
-                  • Analyzed 15,000+ transaction records utilizing SQL window functions to surface key revenue trends.
-                </Text>
+                {realProjects.length ? (
+                  realProjects.map((p: any, idx: number) => (
+                    <View key={idx} style={{ gap: 2, marginBottom: 6 }}>
+                      <View style={styles.entryRow}>
+                        <Text style={styles.entryTitle}>{p.title || 'Project'}</Text>
+                        {p.evidenceStrength ? (
+                          <Text style={styles.entryDate}>{p.evidenceStrength} evidence</Text>
+                        ) : null}
+                      </View>
+                      {p.summary ? <Text style={styles.bulletItem}>• {p.summary}</Text> : null}
+                      {p.tools?.length ? (
+                        <Text style={styles.bulletItem}>• Stack: {p.tools.join(', ')}</Text>
+                      ) : null}
+                    </View>
+                  ))
+                ) : improvements.length ? (
+                  improvements.slice(0, 3).map((imp: any, idx: number) => (
+                    <Text key={idx} style={styles.bulletItem}>
+                      • {imp.example || imp.recommendation}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={styles.bulletItem}>
+                    • Add a project demonstrating your target-role skills, with quantified impact.
+                  </Text>
+                )}
               </View>
 
               {/* ATS Compliance Badge */}
