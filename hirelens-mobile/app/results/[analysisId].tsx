@@ -16,6 +16,7 @@ import { AppButton } from '../../components/AppButton';
 import { Colors } from '../../constants/theme';
 import { ApiClient } from '../../services/apiClient';
 import { StorageService } from '../../services/storage';
+import { ErrorState } from '../../components/ErrorState';
 import { MessageSquare, ShieldAlert, Sparkles } from 'lucide-react-native';
 
 export default function ResultsScreen() {
@@ -24,6 +25,7 @@ export default function ResultsScreen() {
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [pdfModalVisible, setPdfModalVisible] = useState(false);
 
@@ -39,11 +41,14 @@ export default function ResultsScreen() {
         const data: any = await ApiClient.get(`/analyses/${targetId}`);
         if (data && data.result) {
           setResult(data.result);
+          setErrorMessage(null);
+        } else if (data && data.error) {
+          setErrorMessage(data.error.message || 'The analysis result could not be loaded.');
         } else {
-          setResult(getFallbackResult());
+          setErrorMessage('We could not load a completed analysis result. Please try again.');
         }
-      } catch (err) {
-        setResult(getFallbackResult());
+      } catch (err: any) {
+        setErrorMessage(err?.message || 'We could not load the analysis result.');
       } finally {
         setLoading(false);
       }
@@ -67,7 +72,20 @@ export default function ResultsScreen() {
     );
   }
 
-  const res = result || getFallbackResult();
+  if (errorMessage) {
+    return (
+      <View style={styles.container}>
+        <ErrorState
+          title="Analysis Result Unavailable"
+          message={errorMessage}
+          userAction="Please retry the analysis to generate a fresh report."
+          onRetry={() => router.push('/upload')}
+        />
+      </View>
+    );
+  }
+
+  const res = result;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -192,82 +210,6 @@ export default function ResultsScreen() {
       />
     </ScrollView>
   );
-}
-
-function getFallbackResult() {
-  return {
-    resumeQualityScore: 72,
-    jobReadinessScore: 64,
-    resumeScoreLabel: 'Strong Resume',
-    readinessLabel: 'Developing',
-    disclaimer: 'This analysis is guidance and does not guarantee employment or interviews.',
-    dimensionBreakdown: {
-      roleRelevance: 78,
-      skillAlignment: 72,
-      evidenceQuality: 68,
-      projectClarity: 74,
-      structureReadability: 82,
-      languageQuality: 76,
-      projectEvidence: 70,
-      practicalExperience: 45,
-      toolExposure: 75,
-      communicationEvidence: 65,
-    },
-    immediateActions: [
-      'Add quantitative impact metrics to project bullet points.',
-      'Build an end-to-end portfolio project demonstrating core required skills.',
-      'Refactor resume bullet points to start with strong action verbs.',
-    ],
-    strengths: [
-      {
-        title: 'Clear Technical Competency Alignment',
-        explanation: 'Resume explicitly includes core skills required for the target role.',
-        evidenceQuote: 'Demonstrated SQL, Python, and Data Analysis coursework.',
-      },
-    ],
-    gaps: [
-      {
-        title: 'Demonstrate SQL with Portfolio Project Evidence',
-        priority: 'high',
-        reason: 'Target role heavily emphasizes SQL database queries, but project evidence is absent.',
-        nextAction: 'Build a sales dataset reporting pipeline using PostgreSQL window functions.',
-      },
-    ],
-    roadmap: [
-      {
-        stage: 1,
-        title: 'Core Competency Mastery',
-        durationWeeks: 2,
-        objective: 'Strengthen fundamental skills required for entry-level role.',
-        actions: ['Complete targeted exercises on core skills', 'Solve 15 coding challenges'],
-        completionEvidence: 'Successful completion of hands-on query sets',
-      },
-      {
-        stage: 2,
-        title: 'Portfolio Project Construction',
-        durationWeeks: 3,
-        objective: 'Build end-to-end project demonstrating key technical capabilities.',
-        actions: ['Build sales analytics dashboard', 'Document project in GitHub README'],
-        completionEvidence: 'Public GitHub repository link',
-      },
-      {
-        stage: 3,
-        title: 'Resume Refinement & Metric Enhancement',
-        durationWeeks: 1,
-        objective: 'Rewrite bullet points using action-result framework.',
-        actions: ['Quantify project outcomes with business metrics', 'Highlight technology stack'],
-        completionEvidence: 'Updated 1-page PDF resume',
-      },
-      {
-        stage: 4,
-        title: 'Interview & Portfolio Readiness',
-        durationWeeks: 2,
-        objective: 'Practice technical interview discussions and project walkthroughs.',
-        actions: ['Prepare 2-minute elevator pitch', 'Conduct 2 mock technical interviews'],
-        completionEvidence: 'Completed mock interview score of 80%+',
-      },
-    ],
-  };
 }
 
 const styles = StyleSheet.create({

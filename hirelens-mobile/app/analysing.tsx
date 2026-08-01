@@ -38,16 +38,14 @@ export default function AnalysingScreen() {
         }
 
         if (attempts > 30) {
-          // Timeout fallback
-          router.replace(`/results/${targetId}` as any);
+          setErrorMsg('The analysis took too long to complete. Please retry the analysis.');
           return;
         }
 
         timer = setTimeout(checkStatus, 2000);
       } catch (err: any) {
         if (attempts > 3) {
-          // If polling endpoint is unreachable or in mock mode, navigate to demo results
-          router.replace(`/results/${targetId}` as any);
+          setErrorMsg(err?.message || 'The analysis service is currently unavailable. Please retry.');
         } else {
           timer = setTimeout(checkStatus, 2500);
         }

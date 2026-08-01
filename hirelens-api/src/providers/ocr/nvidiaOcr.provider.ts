@@ -15,7 +15,12 @@ export class NvidiaOcrProvider {
    */
   public static async processImages(imageBuffers: Buffer[]): Promise<OcrResult> {
     if (!config.NVIDIA_API_KEY) {
-      return this.fallbackMockOcr(imageBuffers);
+      return {
+        success: false,
+        text: '',
+        confidence: 0,
+        error: 'NVIDIA API key is not configured. Set NVIDIA_API_KEY to enable real OCR processing.',
+      };
     }
 
     try {

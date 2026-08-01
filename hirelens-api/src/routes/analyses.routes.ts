@@ -95,7 +95,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
       record.jobReadinessScore = scoreResult.jobReadinessScore;
       record.confidence = signals.confidence;
       record.status = 'completed';
-      record.providerModel = config.NVIDIA_API_KEY ? config.NVIDIA_LLM_MODEL : 'mock';
+      record.providerModel = config.NVIDIA_API_KEY ? config.NVIDIA_LLM_MODEL : 'unconfigured';
       record.providerLatencyMs = latencyMs;
       record.completedAt = new Date().toISOString();
 

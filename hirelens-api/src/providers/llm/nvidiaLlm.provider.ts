@@ -22,11 +22,7 @@ export class NvidiaLlmProvider {
     const startTime = Date.now();
 
     if (!config.NVIDIA_API_KEY) {
-      const mockSignals = this.generateMockSignals(redactedText, roleProfile);
-      return {
-        signals: mockSignals,
-        latencyMs: Date.now() - startTime,
-      };
+      throw new Error('NVIDIA API key is not configured. Set NVIDIA_API_KEY to enable real AI analysis.');
     }
 
     const client = this.getClient();
@@ -78,12 +74,7 @@ export class NvidiaLlmProvider {
         latencyMs: Date.now() - startTime,
       };
     } catch (err: any) {
-      // Fall back to structured fallback signals if LLM fails
-      const fallbackSignals = this.generateMockSignals(redactedText, roleProfile);
-      return {
-        signals: fallbackSignals,
-        latencyMs: Date.now() - startTime,
-      };
+      throw new Error(`NVIDIA LLM analysis failed: ${err?.message || 'Unknown error'}`);
     }
   }
 
