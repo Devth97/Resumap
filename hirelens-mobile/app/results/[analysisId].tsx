@@ -37,21 +37,37 @@ export default function ResultsScreen() {
       const unlocked = await StorageService.isRoadmapUnlocked(targetId);
       setIsUnlocked(unlocked);
 
-      try {
-        const data: any = await ApiClient.get(`/analyses/${targetId}`);
-        if (data && data.result) {
-          setResult(data.result);
-          setErrorMessage(null);
-        } else if (data && data.error) {
-          setErrorMessage(data.error.message || 'The analysis result could not be loaded.');
-        } else {
-          setErrorMessage('We could not load a completed analysis result. Please try again.');
+      // Retry a few times: a completed analysis can briefly be unreadable on a
+      // cold serverless instance right after it's written (read-after-write lag
+      // across instances). Don't fall back to an error on the first empty read.
+      const maxAttempts = 5;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const data: any = await ApiClient.get(`/analyses/${targetId}`);
+          if (data && data.result) {
+            setResult(data.result);
+            setErrorMessage(null);
+            setLoading(false);
+            return;
+          }
+          if (attempt < maxAttempts) {
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+          if (data && data.error) {
+            setErrorMessage(data.error.message || 'The analysis result could not be loaded.');
+          } else {
+            setErrorMessage('We could not load a completed analysis result. Please try again.');
+          }
+        } catch (err: any) {
+          if (attempt < maxAttempts) {
+            await new Promise((r) => setTimeout(r, 1500));
+            continue;
+          }
+          setErrorMessage(err?.message || 'We could not load the analysis result.');
         }
-      } catch (err: any) {
-        setErrorMessage(err?.message || 'We could not load the analysis result.');
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
 
     loadData();
