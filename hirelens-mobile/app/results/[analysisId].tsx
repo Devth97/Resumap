@@ -37,6 +37,16 @@ export default function ResultsScreen() {
       const unlocked = await StorageService.isRoadmapUnlocked(targetId);
       setIsUnlocked(unlocked);
 
+      // Prefer the inline result cached at analysis time — avoids any dependency
+      // on a cross-instance server read-back.
+      const cached = await StorageService.getAnalysisResult(targetId);
+      if (cached) {
+        setResult(cached);
+        setErrorMessage(null);
+        setLoading(false);
+        return;
+      }
+
       // Retry a few times: a completed analysis can briefly be unreadable on a
       // cold serverless instance right after it's written (read-after-write lag
       // across instances). Don't fall back to an error on the first empty read.

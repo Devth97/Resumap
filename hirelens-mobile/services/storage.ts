@@ -6,9 +6,27 @@ const KEYS = {
   RESUME_EXTRACTION: 'hirelens_resume_extraction',
   QUESTIONNAIRE_ANSWERS: 'hirelens_questionnaire_answers',
   UNLOCKED_ADVANCED_ROADMAP: 'hirelens_unlocked_roadmap_',
+  ANALYSIS_RESULT: 'hirelens_analysis_result_',
 };
 
 export class StorageService {
+  // Cache a completed analysis result so the results screen never depends on a
+  // cross-instance server read-back.
+  public static async setAnalysisResult(analysisId: string, result: any): Promise<void> {
+    try {
+      await AsyncStorage.setItem(`${KEYS.ANALYSIS_RESULT}${analysisId}`, JSON.stringify(result));
+    } catch {}
+  }
+
+  public static async getAnalysisResult(analysisId: string): Promise<any | null> {
+    try {
+      const raw = await AsyncStorage.getItem(`${KEYS.ANALYSIS_RESULT}${analysisId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
   public static async getSessionId(): Promise<string | null> {
     return await AsyncStorage.getItem(KEYS.SESSION_ID);
   }

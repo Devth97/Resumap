@@ -101,9 +101,14 @@ export async function analysisRoutes(fastify: FastifyInstance) {
 
       await AnalysisRepository.save(record);
 
+      // Return the full result inline. The analysis is synchronous, so the
+      // client can use this immediately and never depends on a cross-instance
+      // read-back (serverless instances don't share the in-memory store, and a
+      // just-written Supabase row can briefly be unreadable elsewhere).
       return reply.status(201).send({
         analysisId: record.id,
         status: 'completed',
+        result: resultJson,
       });
     } catch (err: any) {
       record.status = 'failed';

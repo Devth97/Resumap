@@ -54,6 +54,11 @@ export default function QuestionnaireScreen() {
       });
 
       if (res.analysisId) {
+        // Cache the inline result so the results screen never depends on a
+        // cross-instance server read-back.
+        if (res.result) {
+          await StorageService.setAnalysisResult(res.analysisId, res.result);
+        }
         router.push(`/analysing?analysisId=${res.analysisId}` as any);
       } else {
         router.push('/analysing' as any);
