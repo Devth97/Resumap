@@ -124,7 +124,7 @@ export const FloatingMascot: React.FC = () => {
                 }}
               >
                 <View style={styles.actionIconCircle}>
-                  <Award size={18} color="#FFFFFF" />
+                  <Award size={18} color="#18181B" />
                 </View>
                 <View style={styles.actionTextContainer}>
                   <Text style={[styles.actionTitle, { color: '#FFFFFF' }]}>Explore Target Roles</Text>

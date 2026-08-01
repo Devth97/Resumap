@@ -65,8 +65,8 @@ export default function HomeScreen() {
         {/* Neo-Brutalist Stat Banner */}
         <View style={styles.statBanner}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>100%</Text>
-            <Text style={styles.statLabel}>PII Redacted</Text>
+            <Text style={styles.statNumber}>1-Click</Text>
+            <Text style={styles.statLabel}>ATS Resume</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -110,18 +110,6 @@ export default function HomeScreen() {
               <Text style={styles.featureTitle}>NVIDIA NIM Acceleration</Text>
               <Text style={styles.featureDesc}>
                 Nemotron OCR v2 for document extraction & Llama 3.3 70B Instruct for deep skill evaluation.
-              </Text>
-            </View>
-          </AppCard>
-
-          <AppCard style={styles.featureCard}>
-            <View style={[styles.featureIconBox, { backgroundColor: '#00CEC9' }]}>
-              <Text style={styles.emojiIcon}>🛡️</Text>
-            </View>
-            <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Strict Privacy & PII Redaction</Text>
-              <Text style={styles.featureDesc}>
-                Automated removal of emails, phone numbers, and personal identifiers before AI processing.
               </Text>
             </View>
           </AppCard>

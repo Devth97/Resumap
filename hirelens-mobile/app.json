@@ -35,7 +35,14 @@
         {
           "androidAppId": "ca-app-pub-7761261690953165~4823322506"
         }
-      ]
-    ]
+      ],
+      "expo-build-properties"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "106da4e9-de09-49b0-892d-b50ccfc014cc"
+      }
+    }
   }
 }
