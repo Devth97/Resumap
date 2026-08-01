@@ -197,9 +197,9 @@ export const AtsPdfGeneratorModal: React.FC<AtsPdfGeneratorModalProps> = ({
   </style>
 </head>
 <body>
-  <h1>CANDIDATE RESUME</h1>
+  <h1>YOUR NAME</h1>
   <div class="contact-info">
-    City, State &bull; email@example.com &bull; linkedin.com/in/candidate &bull; github.com/candidate
+    Add your phone &bull; email &bull; LinkedIn &bull; GitHub (removed here for privacy)
   </div>
 
   <div class="section-title">EDUCATION</div>
