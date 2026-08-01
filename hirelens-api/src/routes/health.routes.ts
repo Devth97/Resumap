@@ -5,7 +5,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     return reply.send({
       status: 'ok',
       version: '1.0.0',
-      build: 'deepseek-jsonmode-1',
+      build: 'llama33-70b-1',
       timestamp: new Date().toISOString(),
     });
   });

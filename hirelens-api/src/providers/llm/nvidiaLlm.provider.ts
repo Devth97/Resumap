@@ -5,11 +5,11 @@ import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repa
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
 
-// Fast hosted NIM model. The whole analysis must finish inside Vercel's 60s
-// serverless cap, and a 120B model (nemotron-3-super) routinely takes 40-90s
-// on its own, so we drive analysis with a fast model regardless of the
-// NVIDIA_LLM_MODEL env var (which may point at a slow model).
-const FAST_MODEL = 'deepseek-ai/deepseek-v4-flash';
+// Real, reliably-served NVIDIA NIM model that returns structured JSON well and
+// finishes inside Vercel's 60s cap. We pin a known-good model here rather than
+// trusting the NVIDIA_LLM_MODEL env var, which has been set to non-existent /
+// slow models (returning HTTP 529 "overloaded" or blowing the function cap).
+const FAST_MODEL = 'meta/llama-3.3-70b-instruct';
 // Only attempt the extra JSON-repair round-trip if we still have budget under
 // the 60s function cap; otherwise fail cleanly instead of timing out.
 const REPAIR_BUDGET_MS = 35_000;
@@ -101,13 +101,20 @@ export class NvidiaLlmProvider {
     temperature: number
   ) {
     const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 4000, messages };
+    const attempt = (useJson: boolean) =>
+      client.chat.completions.create(
+        useJson ? ({ ...base, response_format: { type: 'json_object' } } as any) : base
+      );
     try {
-      return await client.chat.completions.create({
-        ...base,
-        response_format: { type: 'json_object' },
-      } as any);
-    } catch (jsonModeErr) {
-      return await client.chat.completions.create(base);
+      return await attempt(true);
+    } catch (err: any) {
+      const status = err?.status ?? err?.statusCode;
+      // Transient overload (429/5xx incl. NVIDIA's 529): brief backoff, retry.
+      if (!status || status === 429 || status >= 500) {
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      // Retry without JSON mode (also covers models that reject response_format).
+      return await attempt(false);
     }
   }
 
