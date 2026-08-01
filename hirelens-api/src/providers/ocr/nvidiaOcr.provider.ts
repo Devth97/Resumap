@@ -11,7 +11,9 @@ export interface OcrResult {
 
 export class NvidiaOcrProvider {
   /**
-   * Executes OCR on normalized image buffers using NVIDIA Nemotron OCR v2
+   * Executes OCR on normalized image buffers using an NVIDIA NIM OCR model
+   * (default: nvidia/nemotron-ocr-v2) via the OpenAI-compatible
+   * /v1/chat/completions endpoint.
    */
   public static async processImages(imageBuffers: Buffer[]): Promise<OcrResult> {
     if (!config.NVIDIA_API_KEY) {
@@ -24,18 +26,34 @@ export class NvidiaOcrProvider {
     }
 
     try {
-      const payloadInputs = imageBuffers.map((buf) => ({
+      const imageContent = imageBuffers.map((buf) => ({
         type: 'image_url',
-        url: `data:image/jpeg;base64,${buf.toString('base64')}`,
+        image_url: {
+          url: `data:image/jpeg;base64,${buf.toString('base64')}`,
+        },
       }));
 
       const requestBody = {
-        input: payloadInputs,
-        merge_levels: imageBuffers.map(() => 'paragraph'),
+        model: config.NVIDIA_OCR_MODEL,
+        temperature: 0.1,
+        top_p: 0.7,
+        max_tokens: 4096,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              ...imageContent,
+              {
+                type: 'text',
+                text: 'Extract all text from the provided resume image(s) verbatim. Preserve the original structure, section headings, bullet points, and line breaks. Do not add, summarize, or omit any content.',
+              },
+            ],
+          },
+        ],
       };
 
       const response = await retryWithBackoff(async () => {
-        const res = await fetch(`${config.NVIDIA_BASE_URL}/ocr`, {
+        const res = await fetch(`${config.NVIDIA_BASE_URL}/chat/completions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${config.NVIDIA_API_KEY}`,
@@ -52,32 +70,13 @@ export class NvidiaOcrProvider {
         return res.json();
       }, 2, 2000);
 
-      // Parse NVIDIA OCR response
-      let extractedText = '';
-      let totalConfidence = 0;
-      let detectionCount = 0;
-
-      if (response && Array.isArray(response.results)) {
-        for (const page of response.results) {
-          if (Array.isArray(page.detections)) {
-            for (const det of page.detections) {
-              if (det.text) {
-                extractedText += det.text + '\n';
-                totalConfidence += det.confidence ?? 0.9;
-                detectionCount++;
-              }
-            }
-          }
-        }
-      }
-
-      const avgConfidence = detectionCount > 0 ? totalConfidence / detectionCount : 0.85;
+      const extractedText = (response?.choices?.[0]?.message?.content || '').trim();
 
       if (extractedText.length < CONSTANTS.MIN_EXTRACTED_CHARACTERS) {
         return {
           success: false,
           text: extractedText,
-          confidence: avgConfidence,
+          confidence: 0,
           error: 'Could not extract sufficient readable text from the image. Please ensure the image is clear and well-lit.',
         };
       }
@@ -85,7 +84,7 @@ export class NvidiaOcrProvider {
       return {
         success: true,
         text: extractedText,
-        confidence: avgConfidence,
+        confidence: 0.9,
       };
     } catch (err: any) {
       // Return clear error if API fails
@@ -96,32 +95,5 @@ export class NvidiaOcrProvider {
         error: err.message || 'NVIDIA OCR processing failed.',
       };
     }
-  }
-
-  private static fallbackMockOcr(imageBuffers: Buffer[]): OcrResult {
-    // Development mock OCR fallback
-    const mockText = `
-[CANDIDATE_NAME]
-Computer Science Student | Junior Developer
-Education:
-B.Tech in Computer Science & Engineering - GPA: 8.4/10 (2022 - 2026)
-
-Technical Skills:
-Programming: Python, JavaScript, TypeScript, SQL, Java
-Frameworks & Tools: React, Node.js, Express, PostgreSQL, Git, VS Code
-
-Projects:
-1. Sales Analytics Dashboard: Built an interactive sales reporting dashboard using React and SQL queries to analyze transaction trends over 50k rows.
-2. E-Commerce Backend API: Designed RESTful API endpoints with Node.js and Fastify, implementing JWT authentication and PostgreSQL data storage.
-
-Experience:
-Web Development Intern (Summer 2025): Developed responsive frontend components and fixed bugs for client portal.
-    `.trim();
-
-    return {
-      success: true,
-      text: mockText,
-      confidence: 0.92,
-    };
   }
 }
