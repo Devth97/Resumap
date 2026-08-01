@@ -7,6 +7,7 @@ import { ScoringService } from '../services/scoring.service';
 import { AnalysisRepository, AnalysisRecord } from '../repositories/analysis.repository';
 import { QuestionnaireSchema } from '../schemas/analysis.schema';
 import { CONSTANTS } from '../config/constants';
+import { config } from '../config/env';
 import { cryptoRandomString } from '../utilities/hashing';
 
 const createAnalysisSchema = z.object({
@@ -55,18 +56,21 @@ export async function analysisRoutes(fastify: FastifyInstance) {
 
     await AnalysisRepository.save(record);
 
-    // Run async analysis calculation
-    process.nextTick(async () => {
-      try {
-        const { signals, latencyMs } = await NvidiaLlmProvider.generateSignals(
-          extraction.redactedText,
-          roleProfile,
-          body.questionnaire
-        );
+    // Run analysis SYNCHRONOUSLY within this request. Vercel's serverless
+    // functions freeze/terminate immediately after the response is sent, so a
+    // fire-and-forget process.nextTick() never runs to completion — the record
+    // would stay stuck at 'processing' forever. Awaiting here guarantees the
+    // NVIDIA LLM call actually runs before we respond.
+    try {
+      const { signals, latencyMs } = await NvidiaLlmProvider.generateSignals(
+        extraction.redactedText,
+        roleProfile,
+        body.questionnaire
+      );
 
-        const scoreResult = ScoringService.calculateScores(signals, roleProfile, body.questionnaire);
+      const scoreResult = ScoringService.calculateScores(signals, roleProfile, body.questionnaire);
 
-        const resultJson = {
+      const resultJson = {
           targetRoleName: roleProfile.title,
           resumeQualityScore: scoreResult.resumeQualityScore,
           jobReadinessScore: scoreResult.jobReadinessScore,
@@ -85,28 +89,35 @@ export async function analysisRoutes(fastify: FastifyInstance) {
           disclaimer: 'This AI career analysis is tailored guidance for student readiness and does not guarantee employment, interviews, or selection.',
         };
 
-        record.analysisSignalsJson = signals;
-        record.resultJson = resultJson;
-        record.resumeQualityScore = scoreResult.resumeQualityScore;
-        record.jobReadinessScore = scoreResult.jobReadinessScore;
-        record.confidence = signals.confidence;
-        record.status = 'completed';
-        record.providerModel = 'meta/llama-3.3-70b-instruct';
-        record.providerLatencyMs = latencyMs;
-        record.completedAt = new Date().toISOString();
+      record.analysisSignalsJson = signals;
+      record.resultJson = resultJson;
+      record.resumeQualityScore = scoreResult.resumeQualityScore;
+      record.jobReadinessScore = scoreResult.jobReadinessScore;
+      record.confidence = signals.confidence;
+      record.status = 'completed';
+      record.providerModel = config.NVIDIA_API_KEY ? config.NVIDIA_LLM_MODEL : 'mock';
+      record.providerLatencyMs = latencyMs;
+      record.completedAt = new Date().toISOString();
 
-        await AnalysisRepository.save(record);
-      } catch (err: any) {
-        record.status = 'failed';
-        record.errorCode = CONSTANTS.ERROR_CODES.ANALYSIS_RESPONSE_INVALID;
-        await AnalysisRepository.save(record);
-      }
-    });
+      await AnalysisRepository.save(record);
 
-    return reply.status(202).send({
-      analysisId: record.id,
-      status: 'processing',
-    });
+      return reply.status(201).send({
+        analysisId: record.id,
+        status: 'completed',
+      });
+    } catch (err: any) {
+      record.status = 'failed';
+      record.errorCode = CONSTANTS.ERROR_CODES.ANALYSIS_RESPONSE_INVALID;
+      await AnalysisRepository.save(record);
+
+      return reply.status(500).send({
+        error: {
+          code: record.errorCode,
+          message: 'Analysis failed to complete.',
+          userAction: 'Please retry the analysis.',
+        },
+      });
+    }
   });
 
   fastify.get('/analyses/:analysisId', async (request, reply) => {
