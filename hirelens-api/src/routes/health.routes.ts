@@ -5,7 +5,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     return reply.send({
       status: 'ok',
       version: '1.0.0',
-      build: 'plain-8b-1',
+      build: 'concise-8b-1',
       timestamp: new Date().toISOString(),
     });
   });

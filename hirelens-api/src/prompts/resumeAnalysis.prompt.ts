@@ -22,7 +22,8 @@ You must follow these rules:
  10. Return valid JSON matching the supplied outputSchema.
  11. Do not include markdown or code block wrappers (e.g. do NOT wrap output in \`\`\`json).
  12. Do not calculate the final weighted total score. Return dimension signals for backend calculation.
- 13. Be concise: keep every string field under 20 words. evidenceQuote must be a short direct quote from the resume (or null when absent).
+ 13. Be concise: keep every string field under 12 words. evidenceQuote must be a short direct quote from the resume (or null when absent).
+ 14. Keep the response small and fast: provide at most 3 strengths and at most 3 gaps, and at most 2 short actions per roadmap stage. Output only minified JSON, no extra whitespace or commentary.
 `.trim();
 
 // JSON shape the LLM must return. Kept in sync with AnalysisSignalSchema in
@@ -97,7 +98,7 @@ export const ANALYSIS_OUTPUT_SCHEMA = {
 // Constraints on array sizes: strengths max 5, gaps max 8, roadmap EXACTLY 4
 // stages (stage numbers 1-4), immediateActions EXACTLY 3 items.
 export const OUTPUT_LENGTH_RULES =
-  'Roadmap must contain exactly 4 stages (stage numbers 1 to 4). immediateActions must contain exactly 3 short items. strengths max 5. gaps max 8.';
+  'Roadmap must contain EXACTLY 4 stages (stage numbers 1 to 4), each with at most 2 short actions. immediateActions must contain EXACTLY 3 short items. Provide at most 3 strengths and at most 3 gaps. Limit detectedSkills to the role required skills. All strings under 12 words. Return minified JSON only.';
 
 export function buildAnalysisPrompt(
   redactedText: string,

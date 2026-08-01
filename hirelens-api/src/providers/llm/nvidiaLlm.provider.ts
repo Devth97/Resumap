@@ -101,7 +101,7 @@ export class NvidiaLlmProvider {
     messages: Array<{ role: 'system' | 'user'; content: string }>,
     temperature: number
   ) {
-    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 6000, messages };
+    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 3000, messages };
     try {
       return await client.chat.completions.create(base);
     } catch (err: any) {
