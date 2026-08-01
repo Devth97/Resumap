@@ -15,6 +15,7 @@ const createAnalysisSchema = z.object({
   resumeId: z.string(),
   roleId: z.string(),
   roleTitle: z.string().optional(),
+  redactedText: z.string().optional(),
   questionnaire: QuestionnaireSchema,
 });
 
@@ -22,7 +23,13 @@ export async function analysisRoutes(fastify: FastifyInstance) {
   fastify.post('/analyses', async (request, reply) => {
     const body = createAnalysisSchema.parse(request.body);
 
-    const extraction = await ResumeExtractionRepository.findById(body.resumeId);
+    // Look up the stored extraction; if the record isn't visible on this
+    // serverless instance (cross-instance / Supabase read miss), fall back to
+    // the redacted text the client passed through from the upload step.
+    let extraction: any = await ResumeExtractionRepository.findById(body.resumeId);
+    if (!extraction && body.redactedText && body.redactedText.trim().length > 0) {
+      extraction = { id: body.resumeId, redactedText: body.redactedText };
+    }
     if (!extraction) {
       return reply.status(404).send({
         error: {

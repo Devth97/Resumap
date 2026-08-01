@@ -120,6 +120,7 @@ export async function resumeRoutes(fastify: FastifyInstance) {
       pageCount: record.pageCount,
       characterCount: record.characterCount,
       confidence: record.extractionConfidence,
+      redactedText: record.redactedText,
       status: 'ready',
     });
   });

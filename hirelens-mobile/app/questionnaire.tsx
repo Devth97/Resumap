@@ -50,6 +50,7 @@ export default function QuestionnaireScreen() {
         resumeId: extraction.resumeId,
         roleId: role.id,
         roleTitle: role.title,
+        redactedText: extraction.redactedText,
         questionnaire: questionnaireData,
       });
 

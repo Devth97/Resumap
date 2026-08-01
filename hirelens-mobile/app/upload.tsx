@@ -38,6 +38,7 @@ export default function UploadScreen() {
         fileName: selectedFile.name,
         extractionMethod: result.extractionMethod,
         characterCount: result.characterCount,
+        redactedText: result.redactedText,
       });
 
       router.push(ROUTES.ROLE as any);
