@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Colors, Shadows } from '../constants/theme';
 import { ROUTES } from '../constants/routes';
-import { Sparkles, X, Shield, Award, Upload } from 'lucide-react-native';
+import { Sparkles, X, Map, Award, Upload } from 'lucide-react-native';
 
 export const FloatingMascot: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -78,7 +78,7 @@ export const FloatingMascot: React.FC = () => {
             {/* Speech Bubble */}
             <View style={styles.speechBubble}>
               <Text style={styles.speechText}>
-                "Hey there! I'm Lensy. Need resume tips, PII privacy checks, or instant ATS bullet point optimization? Tap any option below!"
+                "Hey there! I'm Lensy. Need resume tips, your personalized roadmap guide, or instant ATS bullet point optimization? Tap any option below!"
               </Text>
             </View>
 
@@ -104,15 +104,15 @@ export const FloatingMascot: React.FC = () => {
                 style={[styles.actionItem, { backgroundColor: '#00CEC9' }]}
                 onPress={() => {
                   setModalVisible(false);
-                  router.push(ROUTES.PRIVACY as any);
+                  router.push(ROUTES.UPLOAD as any);
                 }}
               >
                 <View style={styles.actionIconCircle}>
-                  <Shield size={18} color="#18181B" />
+                  <Map size={18} color="#18181B" />
                 </View>
                 <View style={styles.actionTextContainer}>
-                  <Text style={styles.actionTitle}>PII Privacy Shield</Text>
-                  <Text style={styles.actionSub}>Learn how your personal info stays 100% safe</Text>
+                  <Text style={styles.actionTitle}>Your Roadmap Guide</Text>
+                  <Text style={styles.actionSub}>Get a personalized 4-stage career action plan</Text>
                 </View>
               </TouchableOpacity>
 
