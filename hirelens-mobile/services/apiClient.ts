@@ -6,9 +6,9 @@ const getApiBaseUrl = (): string => {
   }
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // On Vercel public web deployment, connect to public HTTPS backend API
+    // On Vercel public web deployment, use relative URL (same domain)
     if (hostname.includes('vercel.app')) {
-      return 'https://resumap-sigma.vercel.app/api/v1';
+      return '/api/v1';
     }
     return 'http://localhost:8080/api/v1';
   }

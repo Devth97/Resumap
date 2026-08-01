@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd hirelens-api && npm install && npm run build",
+  "outputDirectory": "hirelens-api/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+}
