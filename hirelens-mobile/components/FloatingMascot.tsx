@@ -8,9 +8,10 @@ import {
   Modal,
   ScrollView,
   Pressable,
+  ImageStyle,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Shadows } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../constants/theme';
 import { ROUTES } from '../constants/routes';
 import { Sparkles, X, Map, Award, Upload } from 'lucide-react-native';
 
@@ -29,7 +30,7 @@ export const FloatingMascot: React.FC = () => {
         >
           <Image
             source={require('../assets/mascot.jpg')}
-            style={styles.avatarImage}
+            style={styles.avatarImage as ImageStyle}
             resizeMode="cover"
           />
           <View style={styles.onlineDot} />
@@ -53,7 +54,7 @@ export const FloatingMascot: React.FC = () => {
               <View style={styles.mascotHeaderTitleRow}>
                 <Image
                   source={require('../assets/mascot.jpg')}
-                  style={styles.modalAvatar}
+                  style={styles.modalAvatar as ImageStyle}
                   resizeMode="cover"
                 />
                 <View>
@@ -85,7 +86,7 @@ export const FloatingMascot: React.FC = () => {
             {/* Quick Actions List */}
             <ScrollView style={styles.actionsList} showsVerticalScrollIndicator={false}>
               <TouchableOpacity
-                style={[styles.actionItem, { backgroundColor: '#FFD93D' }]}
+                style={[styles.actionItem, { backgroundColor: Colors.accentSecondary }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.UPLOAD as any);
@@ -101,7 +102,7 @@ export const FloatingMascot: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionItem, { backgroundColor: '#00CEC9' }]}
+                style={[styles.actionItem, { backgroundColor: Colors.accentCyan }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.UPLOAD as any);
@@ -117,7 +118,7 @@ export const FloatingMascot: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionItem, { backgroundColor: '#FF7675' }]}
+                style={[styles.actionItem, { backgroundColor: Colors.accentPink }]}
                 onPress={() => {
                   setModalVisible(false);
                   router.push(ROUTES.ROLE as any);
@@ -150,9 +151,9 @@ const styles = StyleSheet.create({
     width: 66,
     height: 66,
     borderRadius: 33,
-    borderWidth: 3,
-    borderColor: '#18181B',
-    backgroundColor: '#FFD93D',
+    borderWidth: 2,
+    borderColor: Colors.borderPrimary,
+    backgroundColor: Colors.accentSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.glow,
@@ -169,26 +170,26 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     borderRadius: 7.5,
-    backgroundColor: '#00B894',
+    backgroundColor: Colors.success,
     borderWidth: 2.5,
-    borderColor: '#18181B',
+    borderColor: Colors.surface,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(24, 24, 27, 0.65)',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: 16,
+    padding: Spacing.md,
   },
   modalContent: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: '#18181B',
-    padding: 20,
-    gap: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 2,
+    borderColor: Colors.borderPrimary,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
     ...Shadows.card,
   },
   modalHeader: {
@@ -199,68 +200,68 @@ const styles = StyleSheet.create({
   mascotHeaderTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   modalAvatar: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    borderWidth: 2.5,
-    borderColor: '#18181B',
+    borderWidth: 2,
+    borderColor: Colors.borderPrimary,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   mascotName: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: '#18181B',
+    fontSize: Typography.heading3.fontSize,
+    fontWeight: Typography.heading3.fontWeight,
+    color: Colors.textPrimary,
   },
   aiBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFD93D',
+    gap: Spacing.xs,
+    backgroundColor: Colors.accentSecondary,
     borderWidth: 1.5,
-    borderColor: '#18181B',
-    paddingHorizontal: 8,
+    borderColor: Colors.borderPrimary,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: BorderRadius.full,
   },
   aiBadgeText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#18181B',
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
+    color: Colors.textPrimary,
   },
   mascotSubtitle: {
-    fontSize: 12,
+    fontSize: Typography.caption.fontSize,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   closeButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#FAF7F0',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.surfaceElevated,
     borderWidth: 2,
-    borderColor: '#18181B',
+    borderColor: Colors.borderPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   speechBubble: {
-    backgroundColor: '#FFFDF5',
+    backgroundColor: Colors.surfaceElevated,
     borderWidth: 2,
-    borderColor: '#18181B',
-    borderRadius: 16,
-    padding: 14,
+    borderColor: Colors.borderPrimary,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
     ...Shadows.button,
   },
   speechText: {
-    fontSize: 13,
-    color: '#18181B',
-    lineHeight: 19,
+    fontSize: Typography.bodySmall.fontSize,
+    color: Colors.textPrimary,
+    lineHeight: Typography.bodySmall.lineHeight,
     fontWeight: '600',
   },
   actionsList: {
@@ -269,21 +270,21 @@ const styles = StyleSheet.create({
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 2.5,
-    borderColor: '#18181B',
-    marginBottom: 10,
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 2,
+    borderColor: Colors.borderPrimary,
+    marginBottom: Spacing.md,
     ...Shadows.button,
   },
   actionIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFFFFF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
     borderWidth: 2,
-    borderColor: '#18181B',
+    borderColor: Colors.borderPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -291,14 +292,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#18181B',
+    fontSize: Typography.subheading.fontSize,
+    fontWeight: Typography.subheading.fontWeight,
+    color: Colors.textPrimary,
   },
   actionSub: {
-    fontSize: 11,
-    color: '#475569',
-    marginTop: 1,
+    fontSize: Typography.caption.fontSize,
+    color: Colors.textSecondary,
+    marginTop: 2,
     fontWeight: '600',
   },
 });

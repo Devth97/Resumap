@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 
 interface ScoreBreakdownProps {
   breakdown: {
@@ -29,7 +29,7 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown }) => 
   ];
 
   return (
-    <AppCard>
+    <AppCard variant="recommendation" padding="xl" style={styles.card}>
       <Text style={styles.sectionTitle}>Evaluation Breakdown</Text>
       <View style={styles.listContainer}>
         {items.map((item) => (
@@ -48,8 +48,8 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown }) => 
                       item.val >= 75
                         ? Colors.success
                         : item.val >= 55
-                        ? Colors.accentSecondary
-                        : Colors.warning,
+                        ? Colors.warning
+                        : Colors.danger,
                   },
                 ]}
               />
@@ -62,40 +62,44 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown }) => 
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: Spacing.lg,
+  },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   listContainer: {
-    gap: 12,
+    gap: Spacing.md,
   },
   itemRow: {
-    gap: 4,
+    gap: Spacing.xs,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: Spacing.xs,
   },
   itemLabel: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
   },
   itemVal: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: Typography.bodySmall.fontSize,
+    fontWeight: Typography.bodySmall.fontWeight,
     color: Colors.textPrimary,
   },
   progressTrack: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 4,
+    height: 12,
+    backgroundColor: Colors.borderSubtle,
+    borderRadius: BorderRadius.full,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: BorderRadius.full,
   },
 });

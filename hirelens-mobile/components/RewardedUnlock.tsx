@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Alert } from 'react-native';
 import { AppCard } from './AppCard';
 import { AppButton } from './AppButton';
 import { AD_UNITS, AdService } from '../services/ads';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { Lock, Sparkles } from 'lucide-react-native';
 
 interface RewardedUnlockProps {
@@ -64,7 +64,7 @@ export const RewardedUnlock: React.FC<RewardedUnlockProps> = ({
   }
 
   return (
-    <AppCard style={styles.card} glowing>
+    <AppCard variant="reward" padding="xl" style={styles.card}>
       <View style={styles.iconCircle}>
         <Lock size={28} color={Colors.accentPrimary} />
       </View>
@@ -77,7 +77,7 @@ export const RewardedUnlock: React.FC<RewardedUnlockProps> = ({
         onPress={handleShowRewardedAd}
         loading={loadingAd}
         icon={<Sparkles size={18} color="#FFFFFF" />}
-        style={{ marginTop: 12 }}
+        style={{ marginTop: Spacing.md }}
       />
     </AppCard>
   );
@@ -86,31 +86,29 @@ export const RewardedUnlock: React.FC<RewardedUnlockProps> = ({
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
-    paddingVertical: 20,
-    marginVertical: 12,
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
+    marginVertical: Spacing.md,
   },
   iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.accentPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: Spacing.md,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
+    lineHeight: Typography.bodySmall.lineHeight,
+    paddingHorizontal: Spacing.md,
   },
 });

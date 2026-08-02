@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
-import { FileUp, FileCheck, AlertCircle } from 'lucide-react-native';
+import { Colors, Spacing, Typography, BorderRadius, Shadows } from '../constants/theme';
+import { FileUp, FileCheck } from 'lucide-react-native';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -65,9 +65,9 @@ export const UploadCard: React.FC<UploadCardProps> = ({
   };
 
   return (
-    <AppCard glowing={!!selectedFile}>
+    <AppCard variant="upload" padding="xl" style={styles.card}>
       <TouchableOpacity
-        activeOpacity={0.7}
+        activeOpacity={0.85}
         onPress={handlePickDocument}
         style={styles.dropZone}
       >
@@ -112,82 +112,87 @@ export const UploadCard: React.FC<UploadCardProps> = ({
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginVertical: Spacing.md,
+  },
   dropZone: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: 'rgba(99, 102, 241, 0.4)',
-    borderRadius: 14,
-    backgroundColor: 'rgba(99, 102, 241, 0.05)',
+    borderColor: Colors.borderFocus,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.uploadBg,
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.lg,
   },
   placeholderContainer: {
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.md,
   },
   selectedContainer: {
     alignItems: 'center',
-    gap: 6,
+    gap: Spacing.sm,
   },
   iconCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: Colors.stageBg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: Spacing.xs,
   },
   iconCircleSuccess: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: Colors.successSoft,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: Spacing.xs,
   },
   uploadTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: Typography.heading3.fontSize,
+    fontWeight: Typography.heading3.fontWeight,
     color: Colors.textPrimary,
   },
   uploadSubtitle: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
     textAlign: 'center',
   },
   fileNameText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
   },
   fileMetaText: {
-    fontSize: 13,
+    fontSize: Typography.caption.fontSize,
     color: Colors.accentSecondary,
     fontWeight: '600',
   },
   changeText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 4,
+    fontSize: Typography.caption.fontSize,
+    color: Colors.accentPrimary,
+    marginTop: Spacing.xs,
     textDecorationLine: 'underline',
   },
   badgeRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   typeBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.borderSubtle,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.md,
   },
   typeBadgeText: {
-    fontSize: 11,
+    fontSize: Typography.caption.fontSize,
     color: Colors.textSecondary,
     fontWeight: '600',
   },

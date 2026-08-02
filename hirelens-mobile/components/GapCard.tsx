@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { AlertTriangle, ArrowRight } from 'lucide-react-native';
 
 export interface GapItem {
@@ -16,28 +16,27 @@ export interface GapItem {
 
 export const GapCard: React.FC<{ gap: GapItem }> = ({ gap }) => {
   const isHigh = gap.priority === 'high';
+  const isMedium = gap.priority === 'medium';
 
   return (
-    <AppCard style={isHigh ? styles.highCard : styles.card}>
+    <AppCard variant={isHigh ? 'gapHigh' : isMedium ? 'gapMed' : 'gap'} padding="lg" style={styles.card}>
       <View style={styles.header}>
-        <AlertTriangle
-          size={20}
-          color={isHigh ? Colors.danger : Colors.warning}
-          style={{ marginTop: 2 }}
-        />
+        <View style={styles.iconCircle}>
+          <AlertTriangle size={18} color={isHigh ? Colors.danger : Colors.warning} />
+        </View>
         <View style={{ flex: 1 }}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{gap.title}</Text>
-            <View
-              style={[
-                styles.badge,
-                { backgroundColor: isHigh ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)' },
-              ]}
-            >
+            <View style={[
+              styles.badge,
+              {
+                backgroundColor: isHigh ? Colors.dangerSoft : isMedium ? Colors.warningSoft : Colors.successSoft,
+              },
+            ]}>
               <Text
                 style={[
                   styles.badgeText,
-                  { color: isHigh ? '#B91C1C' : '#92400E' },
+                  { color: isHigh ? Colors.danger : isMedium ? Colors.warning : Colors.success },
                 ]}
               >
                 {gap.priority.toUpperCase()} PRIORITY
@@ -49,12 +48,14 @@ export const GapCard: React.FC<{ gap: GapItem }> = ({ gap }) => {
 
       <Text style={styles.reason}>{gap.reason}</Text>
 
-      <View style={styles.actionBox}>
-        <View style={styles.actionHeader}>
+      <View style={styles.actionRow}>
+        <View style={styles.actionIcon}>
           <ArrowRight size={14} color={Colors.accentSecondary} />
-          <Text style={styles.actionLabel}>Recommended Action:</Text>
         </View>
-        <Text style={styles.actionText}>{gap.nextAction}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.actionLabel}>Recommended Action</Text>
+          <Text style={styles.actionText}>{gap.nextAction}</Text>
+        </View>
       </View>
     </AppCard>
   );
@@ -62,67 +63,79 @@ export const GapCard: React.FC<{ gap: GapItem }> = ({ gap }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(245, 158, 11, 0.05)',
-    borderColor: 'rgba(245, 158, 11, 0.25)',
-    marginBottom: 8,
-  },
-  highCard: {
-    backgroundColor: 'rgba(239, 68, 68, 0.05)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    marginBottom: 8,
+    marginBottom: Spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 6,
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFF1F2', // light red
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 6,
+    gap: Spacing.sm,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
     flex: 1,
+    lineHeight: Typography.heading4.lineHeight,
   },
   badge: {
-    paddingHorizontal: 6,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: BorderRadius.sm,
   },
   badgeText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: Typography.badge.fontSize,
+    fontWeight: Typography.badge.fontWeight,
+    lineHeight: Typography.badge.lineHeight,
   },
   reason: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: 8,
+    lineHeight: Typography.bodySmall.lineHeight,
+    marginBottom: Spacing.md,
   },
-  actionBox: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    borderRadius: 8,
-    padding: 10,
-    gap: 4,
-  },
-  actionHeader: {
+  actionRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSubtle,
+  },
+  actionIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.warningSoft,
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
+    marginTop: 2,
   },
   actionLabel: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
     color: Colors.accentSecondary,
+    marginBottom: 2,
   },
   actionText: {
-    fontSize: 12,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textPrimary,
     fontWeight: '500',
+    lineHeight: Typography.bodySmall.lineHeight,
   },
 });

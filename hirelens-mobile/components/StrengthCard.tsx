@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography } from '../constants/theme';
 import { CheckCircle } from 'lucide-react-native';
 
 export interface StrengthItem {
@@ -13,14 +13,16 @@ export interface StrengthItem {
 
 export const StrengthCard: React.FC<{ strength: StrengthItem }> = ({ strength }) => {
   return (
-    <AppCard style={styles.card}>
+    <AppCard variant="strength" padding="lg" style={styles.card}>
       <View style={styles.header}>
-        <CheckCircle size={20} color={Colors.success} style={{ marginTop: 2 }} />
+        <View style={styles.iconCircle}>
+          <CheckCircle size={18} color={Colors.success} />
+        </View>
         <Text style={styles.title}>{strength.title}</Text>
       </View>
       <Text style={styles.explanation}>{strength.explanation}</Text>
       {strength.evidenceQuote ? (
-        <View style={styles.quoteBox}>
+        <View style={styles.quoteContainer}>
           <Text style={styles.quoteText}>"{strength.evidenceQuote}"</Text>
         </View>
       ) : null}
@@ -30,38 +32,45 @@ export const StrengthCard: React.FC<{ strength: StrengthItem }> = ({ strength })
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderColor: 'rgba(16, 185, 129, 0.25)',
-    marginBottom: 8,
+    marginBottom: Spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 6,
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.successSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
     flex: 1,
+    lineHeight: Typography.heading4.lineHeight,
   },
   explanation: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: Typography.bodySmall.lineHeight,
   },
-  quoteBox: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  quoteContainer: {
+    marginTop: Spacing.md,
+    paddingLeft: Spacing.md,
     borderLeftWidth: 3,
     borderLeftColor: Colors.success,
-    padding: 8,
-    borderRadius: 6,
-    marginTop: 8,
   },
   quoteText: {
-    fontSize: 12,
+    fontSize: Typography.quote.fontSize,
     color: Colors.textSecondary,
     fontStyle: 'italic',
+    lineHeight: Typography.quote.lineHeight,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { CheckCircle2 } from 'lucide-react-native';
 
 export interface RoleOption {
@@ -20,8 +20,8 @@ interface RoleCardProps {
 
 export const RoleCard: React.FC<RoleCardProps> = ({ role, selected, onSelect }) => {
   return (
-    <TouchableOpacity activeOpacity={0.8} onPress={() => onSelect(role)}>
-      <AppCard glowing={selected} style={selected ? styles.selectedCard : undefined}>
+    <TouchableOpacity activeOpacity={0.9} onPress={() => onSelect(role)}>
+      <AppCard variant={selected ? 'stage' : 'default'} padding="lg" style={selected ? styles.selectedCard : styles.card}>
         <View style={styles.headerRow}>
           <Text style={[styles.title, selected && styles.selectedTitle]}>{role.title}</Text>
           {selected && <CheckCircle2 size={22} color={Colors.accentSecondary} />}
@@ -41,41 +41,44 @@ export const RoleCard: React.FC<RoleCardProps> = ({ role, selected, onSelect }) 
 };
 
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: Spacing.md,
+  },
   selectedCard: {
-    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+    backgroundColor: Colors.stageBg,
     borderColor: Colors.accentPrimary,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: Spacing.sm,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: Typography.heading4.fontSize,
+    fontWeight: Typography.heading4.fontWeight,
     color: Colors.textPrimary,
   },
   selectedTitle: {
     color: Colors.accentSecondary,
   },
   description: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: Typography.bodySmall.lineHeight,
   },
   titlesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: Spacing.md,
   },
   entryLabel: {
-    fontSize: 11,
+    fontSize: Typography.caption.fontSize,
     color: Colors.textMuted,
     fontWeight: '600',
   },
   entryTitles: {
-    fontSize: 11,
+    fontSize: Typography.caption.fontSize,
     color: Colors.accentPrimary,
     fontWeight: '600',
     flex: 1,

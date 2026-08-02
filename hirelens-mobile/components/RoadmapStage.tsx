@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AppCard } from './AppCard';
-import { Colors } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { Calendar, CheckSquare } from 'lucide-react-native';
 
 export interface RoadmapStageItem {
@@ -18,10 +18,10 @@ export const RoadmapStage: React.FC<{ stageItem: RoadmapStageItem; isUnlocked?: 
   isUnlocked = true,
 }) => {
   return (
-    <AppCard style={styles.card}>
+    <AppCard variant="stage" padding="xl" style={styles.card}>
       <View style={styles.headerRow}>
-        <View style={styles.stageNumberBadge}>
-          <Text style={styles.stageNumberText}>Stage {stageItem.stage}</Text>
+        <View style={styles.stageBadge}>
+          <Text style={styles.stageText}>Stage {stageItem.stage}</Text>
         </View>
         <View style={styles.durationRow}>
           <Calendar size={14} color={Colors.accentSecondary} />
@@ -33,18 +33,22 @@ export const RoadmapStage: React.FC<{ stageItem: RoadmapStageItem; isUnlocked?: 
       <Text style={styles.objective}>{stageItem.objective}</Text>
 
       <View style={styles.actionsContainer}>
-        <Text style={styles.actionsTitle}>Action Steps:</Text>
+        <Text style={styles.actionsTitle}>Action Steps</Text>
         {stageItem.actions.map((act, idx) => (
           <View key={idx} style={styles.actionRow}>
-            <CheckSquare size={14} color={Colors.accentPrimary} style={{ marginTop: 2 }} />
+            <View style={styles.checkCircle}>
+              <CheckSquare size={14} color={Colors.accentPrimary} />
+            </View>
             <Text style={styles.actionText}>{act}</Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.evidenceBox}>
-        <Text style={styles.evidenceLabel}>Completion Milestone:</Text>
-        <Text style={styles.evidenceText}>{stageItem.completionEvidence}</Text>
+      <View style={styles.evidenceContainer}>
+        <Text style={styles.evidenceLabel}>Completion Milestone</Text>
+        <View style={styles.evidenceContent}>
+          <Text style={styles.evidenceText}>{stageItem.completionEvidence}</Text>
+        </View>
       </View>
     </AppCard>
   );
@@ -52,82 +56,99 @@ export const RoadmapStage: React.FC<{ stageItem: RoadmapStageItem; isUnlocked?: 
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 12,
+    marginBottom: Spacing.lg,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: Spacing.md,
   },
-  stageNumberBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+  stageBadge: {
+    backgroundColor: Colors.accentPrimary,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.md,
   },
-  stageNumberText: {
-    color: Colors.accentPrimary,
-    fontSize: 12,
-    fontWeight: '800',
+  stageText: {
+    color: '#FFFFFF',
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
   },
   durationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   durationText: {
-    fontSize: 12,
+    fontSize: Typography.caption.fontSize,
     color: Colors.accentSecondary,
     fontWeight: '600',
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Typography.heading3.fontSize,
+    fontWeight: Typography.heading3.fontWeight,
     color: Colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
+    lineHeight: Typography.heading3.lineHeight,
   },
   objective: {
-    fontSize: 13,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
-    marginBottom: 10,
-    lineHeight: 18,
+    marginBottom: Spacing.md,
+    lineHeight: Typography.bodySmall.lineHeight,
   },
   actionsContainer: {
-    gap: 6,
-    marginBottom: 10,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   actionsTitle: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
     color: Colors.textPrimary,
+    marginBottom: Spacing.xs,
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 6,
+    gap: Spacing.sm,
+  },
+  checkCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.accentPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   actionText: {
-    fontSize: 12,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
     flex: 1,
-    lineHeight: 16,
+    lineHeight: Typography.bodySmall.lineHeight,
   },
-  evidenceBox: {
-    backgroundColor: 'rgba(255, 217, 61, 0.18)',
-    padding: 8,
-    borderRadius: 8,
+  evidenceContainer: {
+    gap: Spacing.xs,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderSubtle,
+  },
+  evidenceLabel: {
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
+    color: Colors.textPrimary,
+  },
+  evidenceContent: {
+    backgroundColor: Colors.milestoneBg,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
     borderLeftWidth: 3,
     borderLeftColor: Colors.accentSecondary,
   },
-  evidenceLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#B45309',
-  },
   evidenceText: {
-    fontSize: 11,
+    fontSize: Typography.bodySmall.fontSize,
     color: Colors.textSecondary,
-    marginTop: 2,
+    lineHeight: Typography.bodySmall.lineHeight,
   },
 });

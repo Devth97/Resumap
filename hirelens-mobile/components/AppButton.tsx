@@ -1,6 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { Colors, Shadows } from '../constants/theme';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View, ViewStyle, TextStyle } from 'react-native';
+import { Colors, Shadows, Spacing, Typography, BorderRadius } from '../constants/theme';
 
 interface AppButtonProps {
   title: string;
@@ -26,16 +26,17 @@ export const AppButton: React.FC<AppButtonProps> = ({
   const isPrimary = variant === 'primary';
   const isOutline = variant === 'outline';
   const isDanger = variant === 'danger';
+  const isSecondary = variant === 'secondary';
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={onPress}
       disabled={disabled || loading}
       style={[
         styles.button,
         isPrimary && styles.primaryButton,
-        !isPrimary && !isOutline && !isDanger && styles.secondaryButton,
+        isSecondary && styles.secondaryButton,
         isOutline && styles.outlineButton,
         isDanger && styles.dangerButton,
         disabled && styles.disabledButton,
@@ -43,15 +44,15 @@ export const AppButton: React.FC<AppButtonProps> = ({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? '#18181B' : Colors.textPrimary} />
+        <ActivityIndicator color={isPrimary || isOutline ? Colors.textPrimary : '#FFFFFF'} size="small" />
       ) : (
         <>
-          {icon}
+          {icon && <View style={styles.iconWrapper}>{icon}</View>}
           <Text
             style={[
               styles.baseText,
               isPrimary && styles.primaryText,
-              !isPrimary && !isOutline && styles.secondaryText,
+              isSecondary && styles.secondaryText,
               isOutline && styles.outlineText,
               isDanger && styles.dangerText,
               disabled && styles.disabledText,
@@ -68,45 +69,51 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 54,
-    borderRadius: 16,
+    height: 56,
+    borderRadius: BorderRadius.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    gap: 8,
-    borderWidth: 2.5,
-    borderColor: '#18181B',
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.sm,
+    borderWidth: 1,
     ...Shadows.button,
   },
   primaryButton: {
-    backgroundColor: '#FFD93D', // Canary Yellow
+    backgroundColor: Colors.accentSecondary, // Canary Yellow
+    borderColor: Colors.borderSubtle,
   },
   secondaryButton: {
-    backgroundColor: '#6C5CE7', // Electric Violet
+    backgroundColor: Colors.accentPrimary, // Electric Violet
+    borderColor: Colors.accentPrimary,
   },
   outlineButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.surface,
+    borderColor: Colors.borderPrimary,
   },
   dangerButton: {
-    backgroundColor: '#FF7675',
+    backgroundColor: Colors.danger,
+    borderColor: Colors.danger,
   },
   disabledButton: {
     opacity: 0.5,
   },
+  iconWrapper: {
+    marginRight: Spacing.xs,
+  },
   baseText: {
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 0.2,
+    fontSize: Typography.button.fontSize,
+    fontWeight: Typography.button.fontWeight,
+    letterSpacing: Typography.button.letterSpacing,
   },
   primaryText: {
-    color: '#18181B',
+    color: Colors.textPrimary,
   },
   secondaryText: {
     color: '#FFFFFF',
   },
   outlineText: {
-    color: '#18181B',
+    color: Colors.textPrimary,
   },
   dangerText: {
     color: '#FFFFFF',

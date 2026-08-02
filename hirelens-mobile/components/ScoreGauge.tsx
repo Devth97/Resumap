@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Shadows } from '../constants/theme';
+import { Colors, Shadows, Typography, Spacing, BorderRadius } from '../constants/theme';
 
 interface ScoreGaugeProps {
   score: number;
@@ -43,17 +43,17 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
-    padding: 12,
+    padding: Spacing.md,
   },
   circleOuter: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    borderWidth: 6,
+    borderWidth: 5, // Reduced from 6 to 5 (20% reduction)
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    marginBottom: 8,
+    backgroundColor: Colors.surfaceElevated,
+    marginBottom: Spacing.sm,
     ...Shadows.glow,
   },
   circleInner: {
@@ -71,19 +71,19 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   titleText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: Typography.subheading.fontSize,
+    fontWeight: Typography.subheading.fontWeight,
     color: Colors.textPrimary,
     textAlign: 'center',
+    marginBottom: Spacing.xs,
   },
   labelBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    marginTop: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
   },
   labelText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: Typography.caption.fontSize,
+    fontWeight: Typography.caption.fontWeight,
   },
 });
