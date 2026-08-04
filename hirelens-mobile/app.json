@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ResuMap — HireLens",
+    "name": "ResuMap",
     "slug": "hirelens",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,11 +16,11 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "in.ornalens.resumap.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FAF7F0"
       },
-      "package": "in.ornalens.hirelens",
       "versionCode": 1,
       "permissions": []
     },

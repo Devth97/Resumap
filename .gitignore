@@ -17,6 +17,10 @@ web-build/
 .env.development.local
 .env.test.local
 .env.production.local
+hirelens-mobile/credentials.json
+hirelens-mobile/credentials/
+*.jks
+*.pem
 
 # Logs
 npm-debug.log*
