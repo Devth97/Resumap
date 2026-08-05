@@ -56,12 +56,14 @@ export class GroqLlmProvider {
     // The model occasionally omits required fields (e.g. resumeImprovements,
     // roadmap[].completionEvidence) on this large a schema, or returns
     // malformed/truncated JSON. A fresh regeneration is far more reliable
-    // than trying to LLM-repair a broken string. Groq responds in a few
-    // seconds (vs NVIDIA's 15-20s+), so there's headroom for more attempts
-    // than before. Vary temperature per attempt — retrying at the same low,
-    // near-deterministic temperature tends to reproduce the same omission.
-    const MAX_ATTEMPTS = 4;
-    const ATTEMPT_TEMPERATURES = [0.1, 0.25, 0.4, 0.55];
+    // than trying to LLM-repair a broken string. Groq's free tier is capped
+    // at 12,000 TPM though (not just wall-clock time) — each attempt costs
+    // ~2,400-2,900 tokens, so more than ~3 attempts risks exhausting the
+    // entire per-minute budget on a single request and 429-ing. Vary
+    // temperature per attempt — retrying at the same low, near-deterministic
+    // temperature tends to reproduce the same omission.
+    const MAX_ATTEMPTS = 3;
+    const ATTEMPT_TEMPERATURES = [0.1, 0.3, 0.5];
     let lastErr: any;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
