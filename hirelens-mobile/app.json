@@ -19,7 +19,7 @@
       "package": "in.ornalens.resumap.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FAF7F0"
+        "backgroundColor": "#6B45EA"
       },
       "versionCode": 1,
       "permissions": []
@@ -40,7 +40,9 @@
         "expo-build-properties",
         {
           "android": {
-            "kotlinVersion": "2.2.20"
+            "kotlinVersion": "2.2.20",
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
           }
         }
       ],

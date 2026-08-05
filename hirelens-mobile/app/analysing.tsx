@@ -5,6 +5,7 @@ import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { Colors } from '../constants/theme';
 import { ApiClient } from '../services/apiClient';
+import { StorageService } from '../services/storage';
 import { StepIndicator } from '../components/StepIndicator';
 
 export default function AnalysingScreen() {
@@ -22,6 +23,15 @@ export default function AnalysingScreen() {
     async function checkStatus() {
       attempts++;
       try {
+        // The result is already cached locally the moment the analysis POST
+        // finished (see questionnaire.tsx) — this avoids depending on a
+        // cross-instance server read-back that can 404 on a cold instance.
+        const cached = await StorageService.getAnalysisResult(targetId);
+        if (cached) {
+          router.replace(`/results/${targetId}` as any);
+          return;
+        }
+
         const res: any = await ApiClient.get(`/analyses/${targetId}`);
         if (res.status === 'completed') {
           router.replace(`/results/${targetId}` as any);

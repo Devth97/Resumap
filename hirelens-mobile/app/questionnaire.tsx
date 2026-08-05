@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StepIndicator } from '../components/StepIndicator';
 import { AppCard } from '../components/AppCard';
@@ -64,9 +64,17 @@ export default function QuestionnaireScreen() {
       } else {
         router.push('/analysing' as any);
       }
-    } catch (e) {
-      // Fallback redirect
-      router.push(`/analysing?analysisId=ana_demo_${Date.now()}` as any);
+    } catch (e: any) {
+      // The POST genuinely failed (server error, timeout, network drop) — there
+      // is no analysis record to poll for. Previously this fell back to a
+      // fabricated analysisId, which sent the user to the analysing screen to
+      // wait for a record that could never exist, surfacing a confusing
+      // "Analysis record not found" error 10s later. Tell them what actually
+      // happened instead and let them retry from here.
+      Alert.alert(
+        'Analysis Could Not Start',
+        e?.message || 'Something went wrong while starting your analysis. Please check your connection and try again.'
+      );
     } finally {
       setSubmitting(false);
     }
