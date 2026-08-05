@@ -5,26 +5,28 @@ import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repa
 import { AnalysisSignalSchema, AnalysisSignals } from '../../schemas/analysis.schema';
 import { RoleProfile } from '../../schemas/roleProfile.schema';
 
-// Real, reliably-served, FAST NVIDIA NIM model. NOTE: the free hosted NIM
-// endpoint drops the connection at ~79s, so large/slow models (70B) fail there
-// even though Vercel Pro allows 300s. 8B finishes in ~15-20s — the reliable
-// choice on this endpoint. Pinned here rather than trusting NVIDIA_LLM_MODEL,
-// which has been set to non-existent models (HTTP 529).
-const FAST_MODEL = 'meta/llama-3.1-8b-instruct';
+// Switched from NVIDIA's free NIM tier to Groq: NVIDIA's shared endpoint was
+// hanging ~80s before failing with a bare "Connection error" (reproduced
+// directly against the deployed API, twice, identical timing). Groq's
+// inference is fast enough to run the full 70B model well within Vercel's
+// function budget instead of being forced down to an 8B model for speed.
+export const FAST_MODEL = 'llama-3.3-70b-versatile';
 // Budget before giving up on a second (retry) generation.
 const REPAIR_BUDGET_MS = 40_000;
 
-export class NvidiaLlmProvider {
+export class GroqLlmProvider {
   // Vercel Hobby serverless functions hard-cap at 60s. Keep every LLM call
   // well under that: maxRetries 0 (the SDK silently retries up to 2x with
   // backoff otherwise) and a hard client timeout so a slow generation fails
-  // fast instead of blowing the function timeout.
+  // fast instead of blowing the function timeout. Groq is normally a couple
+  // seconds even for 70B, so a 30s hang already means something's wrong —
+  // fail fast rather than sit near the 60s cap like the old NVIDIA timeout did.
   private static getClient(): OpenAI {
     return new OpenAI({
-      apiKey: config.NVIDIA_API_KEY || 'mock-key',
-      baseURL: config.NVIDIA_BASE_URL,
+      apiKey: config.GROQ_API_KEY || 'mock-key',
+      baseURL: config.GROQ_BASE_URL,
       maxRetries: 0,
-      timeout: 70_000,
+      timeout: 30_000,
     });
   }
 
@@ -35,8 +37,8 @@ export class NvidiaLlmProvider {
   ): Promise<{ signals: AnalysisSignals; latencyMs: number }> {
     const startTime = Date.now();
 
-    // Use mock signals when NVIDIA API key is not configured
-    if (!config.NVIDIA_API_KEY) {
+    // Use mock signals when Groq API key is not configured
+    if (!config.GROQ_API_KEY) {
       const mockSignals = this.generateMockSignals(redactedText, roleProfile);
       return {
         signals: this.normalizeDimensions(mockSignals),
@@ -51,9 +53,9 @@ export class NvidiaLlmProvider {
       { role: 'user' as const, content: promptContent },
     ];
 
-    // The 8B model on the shared NIM endpoint occasionally returns malformed or
-    // truncated JSON. A fresh regeneration is far more reliable than trying to
-    // LLM-repair a broken string. Attempt up to twice while time budget allows.
+    // The model occasionally returns malformed or truncated JSON. A fresh
+    // regeneration is far more reliable than trying to LLM-repair a broken
+    // string. Attempt up to twice while time budget allows.
     const MAX_ATTEMPTS = 2;
     let lastErr: any;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -75,7 +77,7 @@ export class NvidiaLlmProvider {
         break;
       }
     }
-    throw new Error(`NVIDIA LLM analysis failed: ${lastErr?.message || 'Unknown error'}`);
+    throw new Error(`Groq LLM analysis failed: ${lastErr?.message || 'Unknown error'}`);
   }
 
   // Pull the JSON object out of a model response, tolerating prose or markdown
@@ -119,10 +121,10 @@ export class NvidiaLlmProvider {
     return AnalysisSignalSchema.parse(jsonObj);
   }
 
-  // One fast generation on FAST_MODEL. Plain generation (NO response_format):
-  // NVIDIA's guided-JSON decoding is grammar-constrained per token and is both
-  // slow (~60s) and prone to truncation on the large analysis schema. We rely
-  // on the prompt + stripMarkdownWrappers + a repair pass for valid JSON.
+  // One fast generation on FAST_MODEL. Plain generation (NO response_format) —
+  // guided-JSON/grammar-constrained decoding was slow and truncation-prone on
+  // the previous provider for this large analysis schema. We rely on the
+  // prompt + stripMarkdownWrappers + a repair pass for valid JSON instead.
   // A generous token ceiling avoids mid-object truncation.
   private static async createJsonCompletion(
     client: OpenAI,
@@ -134,9 +136,9 @@ export class NvidiaLlmProvider {
       return await client.chat.completions.create(base);
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode;
-      // Transient server overload (429 / 5xx incl. NVIDIA's 529) fails fast, so
-      // one quick retry is safe. A timeout/network error has NO status — never
-      // retry those, or two slow calls stack past the 60s function cap.
+      // Transient server overload (429 / 5xx) fails fast, so one quick retry
+      // is safe. A timeout/network error has NO status — never retry those,
+      // or two slow calls stack past the 60s function cap.
       if (status && (status === 429 || status >= 500)) {
         await new Promise((r) => setTimeout(r, 1200));
         return await client.chat.completions.create(base);

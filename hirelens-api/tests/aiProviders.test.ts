@@ -2,18 +2,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SEEDED_ROLE_PROFILES } from '../src/services/roleProfile.service';
 
 describe('AI providers', () => {
-  const originalApiKey = process.env.NVIDIA_API_KEY;
+  const originalNvidiaApiKey = process.env.NVIDIA_API_KEY;
+  const originalGroqApiKey = process.env.GROQ_API_KEY;
 
   beforeEach(() => {
     vi.resetModules();
     delete process.env.NVIDIA_API_KEY;
+    delete process.env.GROQ_API_KEY;
   });
 
   afterEach(() => {
-    if (originalApiKey) {
-      process.env.NVIDIA_API_KEY = originalApiKey;
+    if (originalNvidiaApiKey) {
+      process.env.NVIDIA_API_KEY = originalNvidiaApiKey;
     } else {
       delete process.env.NVIDIA_API_KEY;
+    }
+    if (originalGroqApiKey) {
+      process.env.GROQ_API_KEY = originalGroqApiKey;
+    } else {
+      delete process.env.GROQ_API_KEY;
     }
   });
 
@@ -26,10 +33,10 @@ describe('AI providers', () => {
     expect(result.error).toMatch(/NVIDIA API key/i);
   });
 
-  it('returns mock signals for LLM analysis when no NVIDIA API key is configured', async () => {
-    const { NvidiaLlmProvider } = await import('../src/providers/llm/nvidiaLlm.provider');
+  it('returns mock signals for LLM analysis when no Groq API key is configured', async () => {
+    const { GroqLlmProvider } = await import('../src/providers/llm/groqLlm.provider');
 
-    const result = await NvidiaLlmProvider.generateSignals('Sample resume text', SEEDED_ROLE_PROFILES[0], {});
+    const result = await GroqLlmProvider.generateSignals('Sample resume text', SEEDED_ROLE_PROFILES[0], {});
 
     expect(result).toBeDefined();
     expect(result.signals).toBeDefined();

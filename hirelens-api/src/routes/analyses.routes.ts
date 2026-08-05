@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ResumeExtractionRepository } from '../repositories/resumeExtraction.repository';
 import { RoleProfileService } from '../services/roleProfile.service';
-import { NvidiaLlmProvider } from '../providers/llm/nvidiaLlm.provider';
+import { GroqLlmProvider, FAST_MODEL } from '../providers/llm/groqLlm.provider';
 import { ScoringService } from '../services/scoring.service';
 import { AnalysisRepository, AnalysisRecord } from '../repositories/analysis.repository';
 import { QuestionnaireSchema } from '../schemas/analysis.schema';
@@ -69,7 +69,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
     // would stay stuck at 'processing' forever. Awaiting here guarantees the
     // NVIDIA LLM call actually runs before we respond.
     try {
-      const { signals, latencyMs } = await NvidiaLlmProvider.generateSignals(
+      const { signals, latencyMs } = await GroqLlmProvider.generateSignals(
         extraction.redactedText,
         roleProfile,
         body.questionnaire
@@ -104,7 +104,7 @@ export async function analysisRoutes(fastify: FastifyInstance) {
       record.jobReadinessScore = scoreResult.jobReadinessScore;
       record.confidence = signals.confidence;
       record.status = 'completed';
-      record.providerModel = config.NVIDIA_API_KEY ? config.NVIDIA_LLM_MODEL : 'unconfigured';
+      record.providerModel = config.GROQ_API_KEY ? FAST_MODEL : 'unconfigured';
       record.providerLatencyMs = latencyMs;
       record.completedAt = new Date().toISOString();
 

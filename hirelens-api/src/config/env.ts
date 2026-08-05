@@ -13,8 +13,13 @@ const envSchema = z.object({
       const url = value.replace(/\/+$/, '');
       return /\/v1$/.test(url) ? url : `${url}/v1`;
     }),
-  NVIDIA_LLM_MODEL: z.string().default('nvidia/nemotron-3-super-120b-a12b'),
   NVIDIA_OCR_MODEL: z.string().default('nvidia/nemotron-parse'),
+
+  // Resume analysis generation now runs on Groq (OpenAI-compatible endpoint) —
+  // NVIDIA's free NIM tier was hanging ~70-80s before failing. NVIDIA is kept
+  // above only for OCR (resumes.routes.ts), a separate feature.
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_BASE_URL: z.string().default('https://api.groq.com/openai/v1'),
 
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
