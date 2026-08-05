@@ -17,6 +17,13 @@ const getApiBaseUrl = (): string => {
   return 'https://resumap-tjv1.vercel.app/api/v1';
 };
 
+// Prefer the specific `detail` the backend attaches (e.g. the raw provider
+// error) over the generic wrapper `message` ("Analysis failed to complete.")
+// so failures are actually diagnosable from what the user sees on screen.
+function extractApiErrorMessage(data: any): string {
+  return data?.error?.detail || data?.error?.message || 'API request failed.';
+}
+
 export class ApiClient {
   public static async get<T>(path: string): Promise<T> {
     const baseUrl = getApiBaseUrl();
@@ -28,7 +35,7 @@ export class ApiClient {
 
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.error?.message || 'API request failed.');
+      throw new Error(extractApiErrorMessage(data));
     }
     return data as T;
   }
@@ -47,7 +54,7 @@ export class ApiClient {
 
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.error?.message || 'API request failed.');
+      throw new Error(extractApiErrorMessage(data));
     }
     return data as T;
   }
@@ -98,7 +105,7 @@ export class ApiClient {
 
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.error?.message || 'File upload failed.');
+      throw new Error(data?.error?.detail || data?.error?.message || 'File upload failed.');
     }
     return data as T;
   }
