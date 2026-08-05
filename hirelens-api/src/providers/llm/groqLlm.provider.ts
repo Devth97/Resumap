@@ -56,14 +56,17 @@ export class GroqLlmProvider {
     // The model occasionally omits required fields (e.g. resumeImprovements,
     // roadmap[].completionEvidence) on this large a schema, or returns
     // malformed/truncated JSON. A fresh regeneration is far more reliable
-    // than trying to LLM-repair a broken string. Groq's free tier is capped
-    // at 12,000 TPM though (not just wall-clock time) — each attempt costs
-    // ~2,400-2,900 tokens, so more than ~3 attempts risks exhausting the
-    // entire per-minute budget on a single request and 429-ing. Vary
-    // temperature per attempt — retrying at the same low, near-deterministic
-    // temperature tends to reproduce the same omission.
-    const MAX_ATTEMPTS = 3;
-    const ATTEMPT_TEMPERATURES = [0.1, 0.3, 0.5];
+    // than trying to LLM-repair a broken string. Groq's free tier caps at
+    // BOTH 12,000 TPM and 100,000 TPD (tokens/day) — the daily cap is the
+    // tighter constraint in practice (each attempt costs ~2,000-4,500
+    // tokens, so 3 attempts can burn 6,000-13,500 tokens on a single
+    // analysis). 2 attempts roughly doubles the number of analyses the free
+    // daily budget can support, at the cost of one fewer chance to recover
+    // from a schema-incomplete response. Vary temperature per attempt —
+    // retrying at the same low, near-deterministic temperature tends to
+    // reproduce the same omission.
+    const MAX_ATTEMPTS = 2;
+    const ATTEMPT_TEMPERATURES = [0.1, 0.35];
     let lastErr: any;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
