@@ -53,14 +53,19 @@ export class GroqLlmProvider {
       { role: 'user' as const, content: promptContent },
     ];
 
-    // The model occasionally returns malformed or truncated JSON. A fresh
-    // regeneration is far more reliable than trying to LLM-repair a broken
-    // string. Attempt up to twice while time budget allows.
-    const MAX_ATTEMPTS = 2;
+    // The model occasionally omits required fields (e.g. resumeImprovements,
+    // roadmap[].completionEvidence) on this large a schema, or returns
+    // malformed/truncated JSON. A fresh regeneration is far more reliable
+    // than trying to LLM-repair a broken string. Groq responds in a few
+    // seconds (vs NVIDIA's 15-20s+), so there's headroom for more attempts
+    // than before. Vary temperature per attempt — retrying at the same low,
+    // near-deterministic temperature tends to reproduce the same omission.
+    const MAX_ATTEMPTS = 4;
+    const ATTEMPT_TEMPERATURES = [0.1, 0.25, 0.4, 0.55];
     let lastErr: any;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        const completion = await this.createJsonCompletion(client, messages, 0.1);
+        const completion = await this.createJsonCompletion(client, messages, ATTEMPT_TEMPERATURES[attempt - 1]);
         const raw = completion.choices[0]?.message?.content || '';
         const jsonStr = this.extractJson(raw);
         const parsed = AnalysisSignalSchema.parse(JSON.parse(jsonStr));
@@ -70,7 +75,7 @@ export class GroqLlmProvider {
         };
       } catch (err: any) {
         lastErr = err;
-        // Only retry if a second full generation still fits under the 60s cap.
+        // Only retry if another full generation still fits under the 60s cap.
         if (attempt < MAX_ATTEMPTS && Date.now() - startTime < REPAIR_BUDGET_MS) {
           continue;
         }
