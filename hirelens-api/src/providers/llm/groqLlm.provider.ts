@@ -147,7 +147,14 @@ export class GroqLlmProvider {
       // is safe. A timeout/network error has NO status — never retry those,
       // or two slow calls stack past the 60s function cap.
       if (status && (status === 429 || status >= 500)) {
-        await new Promise((r) => setTimeout(r, 1200));
+        // Groq's 429 body tells us exactly how long to wait (e.g. "Please
+        // try again in 10.145s") — a flat short backoff just retries into
+        // the same still-active rate limit and fails again. Use its
+        // guidance, capped so we never blow the 60s function budget.
+        const retryMatch = /try again in ([\d.]+)s/i.exec(String(err?.message || ''));
+        const suggestedMs = retryMatch ? parseFloat(retryMatch[1]) * 1000 : 1200;
+        const waitMs = Math.min(Math.max(suggestedMs, 500), 15_000);
+        await new Promise((r) => setTimeout(r, waitMs));
         return await client.chat.completions.create(base);
       }
       throw err;
