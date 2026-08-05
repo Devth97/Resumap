@@ -138,7 +138,13 @@ export class GroqLlmProvider {
     messages: Array<{ role: 'system' | 'user'; content: string }>,
     temperature: number
   ) {
-    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 4000, messages };
+    // The prompt's own OUTPUT_LENGTH_RULES demand a compact response (max 3
+    // strengths/gaps, 4 short roadmap stages, 3 immediate actions, all
+    // strings under 12 words) — observed real usage tops out well under
+    // 2000 tokens. Groq's TPM rate accounting appears to weigh the
+    // requested ceiling, so keeping this tight (not 4000) leaves more of
+    // the 12K TPM free-tier budget for other concurrent requests.
+    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 2000, messages };
     try {
       return await client.chat.completions.create(base);
     } catch (err: any) {
