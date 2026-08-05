@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StepIndicator } from '../components/StepIndicator';
 import { AppCard } from '../components/AppCard';
@@ -19,9 +19,11 @@ export default function QuestionnaireScreen() {
   const [internship, setInternship] = useState('none');
   const [interviewConfidence, setInterviewConfidence] = useState(3);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setSubmitError(null);
 
     const questionnaireData = {
       timeline,
@@ -71,8 +73,12 @@ export default function QuestionnaireScreen() {
       // wait for a record that could never exist, surfacing a confusing
       // "Analysis record not found" error 10s later. Tell them what actually
       // happened instead and let them retry from here.
-      Alert.alert(
-        'Analysis Could Not Start',
+      //
+      // NOTE: this used to call Alert.alert(), but react-native-web ships
+      // Alert.alert as a no-op stub (`static alert() {}`) — on the web build
+      // it silently did nothing, so the button just reset with zero
+      // feedback. An inline error message works identically on web/iOS/Android.
+      setSubmitError(
         e?.message || 'Something went wrong while starting your analysis. Please check your connection and try again.'
       );
     } finally {
@@ -198,6 +204,13 @@ export default function QuestionnaireScreen() {
         </View>
       </AppCard>
 
+      {submitError ? (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorTitle}>Analysis Could Not Start</Text>
+          <Text style={styles.errorMessage}>{submitError}</Text>
+        </View>
+      ) : null}
+
       <AppButton
         title="Generate AI Analysis & Roadmap"
         onPress={handleSubmit}
@@ -289,5 +302,23 @@ const styles = StyleSheet.create({
   },
   selectedConfText: {
     color: '#FFFFFF',
+  },
+  errorBanner: {
+    backgroundColor: Colors.dangerSoft,
+    borderWidth: 1,
+    borderColor: Colors.dangerBorder,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+    gap: 4,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.danger,
+  },
+  errorMessage: {
+    fontSize: 13,
+    color: Colors.danger,
   },
 });
