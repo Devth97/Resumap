@@ -75,6 +75,7 @@ export class GroqLlmProvider {
         const jsonStr = this.extractJson(raw);
         const rawParsed = JSON.parse(jsonStr);
         this.backfillRoadmapCompletionEvidence(rawParsed);
+        this.backfillMissingResumeImprovements(rawParsed);
         const parsed = AnalysisSignalSchema.parse(rawParsed);
         return {
           signals: this.normalizeDimensions(parsed),
@@ -106,6 +107,17 @@ export class GroqLlmProvider {
         stage.completionEvidence =
           actions.length > 0 ? `Completed: ${actions[0]}` : 'Completed the actions listed for this stage.';
       }
+    }
+  }
+
+  // Observed: the model sometimes drops resumeImprovements entirely.
+  // AnalysisSignalSchema has no minimum length on this array, so an empty
+  // list is valid — default to it rather than failing an otherwise-good
+  // response and spending a retry on a field that's a nice-to-have, not
+  // core analysis output.
+  private static backfillMissingResumeImprovements(raw: any): void {
+    if (raw && !Array.isArray(raw.resumeImprovements)) {
+      raw.resumeImprovements = [];
     }
   }
 
