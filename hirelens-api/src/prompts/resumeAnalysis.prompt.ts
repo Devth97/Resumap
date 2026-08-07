@@ -24,6 +24,7 @@ You must follow these rules:
  12. Do not calculate the final weighted total score. Return dimension signals for backend calculation.
  13. Be concise: keep every string field under 12 words. evidenceQuote must be a short direct quote from the resume (or null when absent).
  14. Keep the response small and fast: provide at most 3 strengths and at most 3 gaps, and at most 2 short actions per roadmap stage. Output only minified JSON, no extra whitespace or commentary.
+ 15. Every roadmap stage object MUST include a non-empty completionEvidence string (how the student proves that stage is done) — do not omit this field on any of the 4 stages.
 `.trim();
 
 // JSON shape the LLM must return. Kept in sync with AnalysisSignalSchema in

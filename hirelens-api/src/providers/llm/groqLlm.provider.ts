@@ -73,7 +73,9 @@ export class GroqLlmProvider {
         const completion = await this.createJsonCompletion(client, messages, ATTEMPT_TEMPERATURES[attempt - 1]);
         const raw = completion.choices[0]?.message?.content || '';
         const jsonStr = this.extractJson(raw);
-        const parsed = AnalysisSignalSchema.parse(JSON.parse(jsonStr));
+        const rawParsed = JSON.parse(jsonStr);
+        this.backfillRoadmapCompletionEvidence(rawParsed);
+        const parsed = AnalysisSignalSchema.parse(rawParsed);
         return {
           signals: this.normalizeDimensions(parsed),
           latencyMs: Date.now() - startTime,
@@ -88,6 +90,23 @@ export class GroqLlmProvider {
       }
     }
     throw new Error(`Groq LLM analysis failed: ${lastErr?.message || 'Unknown error'}`);
+  }
+
+  // Observed twice: the model drops roadmap[].completionEvidence (sometimes
+  // on every stage) while getting the rest of the schema right. It's a
+  // short, mechanically derivable field — not worth discarding an otherwise
+  // valid response and burning a full retry (and its token cost) over.
+  private static backfillRoadmapCompletionEvidence(raw: any): void {
+    if (!raw || !Array.isArray(raw.roadmap)) return;
+    for (const stage of raw.roadmap) {
+      if (stage && typeof stage.completionEvidence !== 'string') {
+        const actions = Array.isArray(stage.actions)
+          ? stage.actions.filter((a: any) => typeof a === 'string')
+          : [];
+        stage.completionEvidence =
+          actions.length > 0 ? `Completed: ${actions[0]}` : 'Completed the actions listed for this stage.';
+      }
+    }
   }
 
   // Pull the JSON object out of a model response, tolerating prose or markdown
