@@ -27,7 +27,7 @@ export class ResumeExtractionRepository {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('resume_extractions').insert({
+        const { error } = await this.supabase.from('resume_extractions').insert({
           id: record.id,
           session_id: record.sessionId,
           extraction_method: record.extractionMethod,
@@ -39,8 +39,19 @@ export class ResumeExtractionRepository {
           created_at: record.createdAt,
           expires_at: record.expiresAt,
         });
+
+        // supabase-js returns errors instead of throwing — see
+        // AnalysisRepository.save for why swallowing them is dangerous here.
+        if (error) {
+          console.error('[ResumeExtractionRepository.save] Supabase insert failed', {
+            id: record.id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
       } catch (e) {
-        // memory store fallback
+        console.error('[ResumeExtractionRepository.save] Supabase insert threw', record.id, e);
       }
     }
 
@@ -54,7 +65,17 @@ export class ResumeExtractionRepository {
 
     if (this.supabase) {
       try {
-        const { data } = await this.supabase.from('resume_extractions').select('*').eq('id', id).single();
+        const { data, error } = await this.supabase.from('resume_extractions').select('*').eq('id', id).single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('[ResumeExtractionRepository.findById] Supabase read failed', {
+            id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
+
         if (data) {
           const rec: ResumeExtractionRecord = {
             id: data.id,

@@ -64,6 +64,7 @@ export async function resumeRoutes(fastify: FastifyInstance) {
             userAction: pdfResult.isScanned
               ? 'This PDF appears to be scanned or image-based. Please upload clear JPG or PNG images of each page.'
               : 'Upload an unprotected single/two page PDF resume with digital text.',
+            detail: pdfResult.detail,
           },
         });
       }

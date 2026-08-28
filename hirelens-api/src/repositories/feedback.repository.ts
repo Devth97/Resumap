@@ -28,7 +28,7 @@ export class FeedbackRepository {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('feedback').insert({
+        const { error } = await this.supabase.from('feedback').insert({
           id: record.id,
           session_id: record.sessionId,
           analysis_id: record.analysisId,
@@ -41,8 +41,19 @@ export class FeedbackRepository {
           contact_consent: record.contactConsent,
           created_at: record.createdAt,
         });
+
+        // supabase-js returns errors instead of throwing — see
+        // AnalysisRepository.save for why swallowing them is dangerous here.
+        if (error) {
+          console.error('[FeedbackRepository.save] Supabase insert failed', {
+            id: record.id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
       } catch (e) {
-        // memory fallback
+        console.error('[FeedbackRepository.save] Supabase insert threw', record.id, e);
       }
     }
 

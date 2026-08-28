@@ -30,12 +30,45 @@ export class AnalysisRepository {
 
   private static memoryStore = new Map<string, AnalysisRecord>();
 
+  /**
+   * Reports whether analyses survive beyond this instance's memory.
+   *
+   * When Supabase is unconfigured or unreadable, every write lands only in the
+   * in-process Map above. That looks healthy until a later request is served by
+   * a different serverless instance, which finds nothing and answers 404
+   * "Analysis record not found." Surfaced on /health so the condition is
+   * checkable directly instead of inferred from user reports.
+   */
+  public static async persistenceStatus(): Promise<{
+    configured: boolean;
+    reachable: boolean;
+    detail?: string;
+  }> {
+    if (!this.supabase) {
+      return {
+        configured: false,
+        reachable: false,
+        detail: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set — analyses are memory-only.',
+      };
+    }
+
+    try {
+      const { error } = await this.supabase.from('analyses').select('id').limit(1);
+      if (error) {
+        return { configured: true, reachable: false, detail: `${error.code}: ${error.message}` };
+      }
+      return { configured: true, reachable: true };
+    } catch (e: any) {
+      return { configured: true, reachable: false, detail: String(e?.message || e) };
+    }
+  }
+
   public static async save(record: AnalysisRecord): Promise<AnalysisRecord> {
     this.memoryStore.set(record.id, record);
 
     if (this.supabase) {
       try {
-        await this.supabase.from('analyses').upsert({
+        const { error } = await this.supabase.from('analyses').upsert({
           id: record.id,
           session_id: record.sessionId,
           resume_extraction_id: record.resumeExtractionId,
@@ -48,14 +81,28 @@ export class AnalysisRepository {
           job_readiness_score: record.jobReadinessScore,
           confidence: record.confidence,
           status: record.status,
+          stage: record.stage,
           error_code: record.errorCode,
           provider_model: record.providerModel,
           provider_latency_ms: record.providerLatencyMs,
           created_at: record.createdAt,
           completed_at: record.completedAt,
         });
+
+        // supabase-js resolves with an `error` payload instead of throwing, so
+        // a catch block alone silently loses every write failure. Without this
+        // log, a schema mismatch looks exactly like a healthy save until a read
+        // on another serverless instance 404s.
+        if (error) {
+          console.error('[AnalysisRepository.save] Supabase upsert failed', {
+            id: record.id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
       } catch (e) {
-        // memory fallback
+        console.error('[AnalysisRepository.save] Supabase upsert threw', record.id, e);
       }
     }
 
@@ -69,7 +116,20 @@ export class AnalysisRepository {
 
     if (this.supabase) {
       try {
-        const { data } = await this.supabase.from('analyses').select('*').eq('id', id).single();
+        const { data, error } = await this.supabase.from('analyses').select('*').eq('id', id).single();
+
+        // PGRST116 is "no rows matched", which is an ordinary miss. Anything
+        // else (bad column type, RLS, connectivity) is a real fault worth
+        // seeing rather than reporting to the user as "record not found".
+        if (error && error.code !== 'PGRST116') {
+          console.error('[AnalysisRepository.findById] Supabase read failed', {
+            id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
+
         if (data) {
           const rec: AnalysisRecord = {
             id: data.id,
@@ -84,6 +144,7 @@ export class AnalysisRepository {
             jobReadinessScore: data.job_readiness_score,
             confidence: data.confidence,
             status: data.status,
+            stage: data.stage,
             errorCode: data.error_code,
             providerModel: data.provider_model,
             providerLatencyMs: data.provider_latency_ms,

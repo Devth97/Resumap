@@ -18,7 +18,16 @@ export default function AnalysingScreen() {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     let attempts = 0;
-    const targetId = analysisId || 'ana_demo';
+    const targetId = analysisId;
+
+    // There used to be an `analysisId || 'ana_demo'` fallback here. A
+    // placeholder id has no record behind it, so it polled for 10s and then
+    // reported "Analysis record not found" — a server-shaped error for what is
+    // really a navigation bug. Say something the user can act on instead.
+    if (!targetId) {
+      setErrorMsg('We lost track of this analysis. Please start it again.');
+      return;
+    }
 
     async function checkStatus() {
       attempts++;
@@ -55,7 +64,16 @@ export default function AnalysingScreen() {
         timer = setTimeout(checkStatus, 2000);
       } catch (err: any) {
         if (attempts > 3) {
-          setErrorMsg(err?.message || 'The analysis service is currently unavailable. Please retry.');
+          // "Analysis record not found." is the server telling us it has no row
+          // for this id; echoing it verbatim leaves the user staring at
+          // database vocabulary with no idea what to do. Everything else (a
+          // provider failure, a timeout) carries a `detail` worth showing.
+          const raw = String(err?.message || '');
+          setErrorMsg(
+            /not found/i.test(raw)
+              ? 'We could not retrieve your finished analysis. Please run it again.'
+              : raw || 'The analysis service is currently unavailable. Please retry.'
+          );
         } else {
           timer = setTimeout(checkStatus, 2500);
         }

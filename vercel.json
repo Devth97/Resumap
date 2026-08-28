@@ -13,7 +13,8 @@
       "src": "hirelens-api/api/index.ts",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 300
+        "maxDuration": 300,
+        "includeFiles": "hirelens-api/node_modules/pdf-parse/lib/pdf.js/**"
       }
     }
   ],

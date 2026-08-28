@@ -1,6 +1,20 @@
 import pdfParse from 'pdf-parse';
 import { CONSTANTS } from '../config/constants';
 
+// pdf-parse loads its bundled pdf.js through a template-literal require:
+//
+//   require(`./pdf.js/${options.version}/build/pdf.js`)   (lib/pdf-parse.js:62)
+//
+// Vercel traces imports statically, so it cannot see that path and leaves
+// lib/pdf.js/** out of the serverless bundle entirely. The require then throws
+// MODULE_NOT_FOUND at call time and every upload fails with "Failed to extract
+// text from PDF" — in production only, since local runs have node_modules on
+// disk. This static require names the file the tracer needs to include; it
+// resolves the same module pdf-parse asks for, so the dynamic require below it
+// then succeeds. v1.10.100 is pdf-parse's DEFAULT_OPTIONS.version — keep the
+// two in sync.
+require('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js');
+
 export interface PdfExtractionResult {
   success: boolean;
   text: string;
@@ -8,6 +22,7 @@ export interface PdfExtractionResult {
   characterCount: number;
   isScanned: boolean;
   error?: string;
+  detail?: string;
   errorCode?: keyof typeof CONSTANTS.ERROR_CODES;
 }
 
@@ -86,6 +101,14 @@ export class PdfExtractionService {
         };
       }
 
+      // The real cause used to be discarded here, which is how a missing
+      // bundled dependency spent weeks looking like a bad resume file.
+      console.error('[PdfExtractionService.extract] pdf-parse threw', {
+        message: err?.message,
+        code: err?.code,
+        stack: String(err?.stack || '').split('\n').slice(0, 3).join(' | '),
+      });
+
       return {
         success: false,
         text: '',
@@ -93,6 +116,7 @@ export class PdfExtractionService {
         characterCount: 0,
         isScanned: false,
         error: 'Failed to extract text from PDF.',
+        detail: String(err?.message || err).slice(0, 300),
         errorCode: 'RESUME_TEXT_INSUFFICIENT',
       };
     }

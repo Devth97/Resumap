@@ -9,19 +9,40 @@ const KEYS = {
   ANALYSIS_RESULT: 'hirelens_analysis_result_',
 };
 
+// Results are also held in memory for the life of the app process. An analysis
+// result carries the full resume text and roadmap, so the AsyncStorage write
+// can fail on a device that is low on space or over the SQLite row limit — and
+// that failure is not something the user should ever feel, because it would
+// drop them onto the polling path and a 404 from a cold serverless instance.
+const analysisResultMemoryCache = new Map<string, any>();
+
 export class StorageService {
   // Cache a completed analysis result so the results screen never depends on a
   // cross-instance server read-back.
   public static async setAnalysisResult(analysisId: string, result: any): Promise<void> {
+    analysisResultMemoryCache.set(analysisId, result);
     try {
       await AsyncStorage.setItem(`${KEYS.ANALYSIS_RESULT}${analysisId}`, JSON.stringify(result));
-    } catch {}
+    } catch (e) {
+      // Non-fatal: the in-memory copy above still serves this session.
+      console.warn('[StorageService] Failed to persist analysis result', analysisId, e);
+    }
   }
 
   public static async getAnalysisResult(analysisId: string): Promise<any | null> {
+    const inMemory = analysisResultMemoryCache.get(analysisId);
+    if (inMemory) {
+      return inMemory;
+    }
+
     try {
       const raw = await AsyncStorage.getItem(`${KEYS.ANALYSIS_RESULT}${analysisId}`);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw);
+      analysisResultMemoryCache.set(analysisId, parsed);
+      return parsed;
     } catch {
       return null;
     }

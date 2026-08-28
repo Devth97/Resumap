@@ -23,7 +23,7 @@ export class SessionRepository {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('sessions').insert({
+        const { error } = await this.supabase.from('sessions').insert({
           id: session.id,
           event_code: session.eventCode,
           device_hash: session.deviceHash,
@@ -31,8 +31,19 @@ export class SessionRepository {
           expires_at: session.expiresAt,
           status: session.status,
         });
+
+        // supabase-js returns errors instead of throwing — see
+        // AnalysisRepository.save for why swallowing them is dangerous here.
+        if (error) {
+          console.error('[SessionRepository.create] Supabase insert failed', {
+            id: session.id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
       } catch (e) {
-        // Fallback to memory store silently
+        console.error('[SessionRepository.create] Supabase insert threw', session.id, e);
       }
     }
 
@@ -46,7 +57,17 @@ export class SessionRepository {
 
     if (this.supabase) {
       try {
-        const { data } = await this.supabase.from('sessions').select('*').eq('id', id).single();
+        const { data, error } = await this.supabase.from('sessions').select('*').eq('id', id).single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('[SessionRepository.findById] Supabase read failed', {
+            id,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          });
+        }
+
         if (data) {
           const rec: SessionRecord = {
             id: data.id,

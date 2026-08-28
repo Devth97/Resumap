@@ -56,16 +56,22 @@ export default function QuestionnaireScreen() {
         questionnaire: questionnaireData,
       });
 
-      if (res.analysisId) {
-        // Cache the inline result so the results screen never depends on a
-        // cross-instance server read-back.
-        if (res.result) {
-          await StorageService.setAnalysisResult(res.analysisId, res.result);
-        }
-        router.push(`/analysing?analysisId=${res.analysisId}` as any);
-      } else {
-        router.push('/analysing' as any);
+      if (!res.analysisId) {
+        // Without an id there is nothing to poll for. Navigating to the
+        // analysing screen anyway made it fall back to a placeholder id and
+        // spend ~10s retrying a request that could only ever 404, ending on
+        // "Analysis record not found." Fail here, where the user can retry.
+        throw new Error(
+          'The analysis did not start correctly. Please try submitting again.'
+        );
       }
+
+      // Cache the inline result so the results screen never depends on a
+      // cross-instance server read-back.
+      if (res.result) {
+        await StorageService.setAnalysisResult(res.analysisId, res.result);
+      }
+      router.push(`/analysing?analysisId=${res.analysisId}` as any);
     } catch (e: any) {
       // The POST genuinely failed (server error, timeout, network drop) — there
       // is no analysis record to poll for. Previously this fell back to a
