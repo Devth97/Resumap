@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "ResuMap - AI-powered resume analysis platform",
   "private": true,
+  "engines": { "node": "22.x" },
   "scripts": {
     "build": "cd hirelens-api && npm install --include=dev && npm run build",
     "dev:api": "cd hirelens-api && npm run dev",

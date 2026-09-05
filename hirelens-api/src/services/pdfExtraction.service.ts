@@ -1,10 +1,5 @@
-import { PDFParse } from 'pdf-parse';
-import { pathToFileURL } from 'node:url';
+import type { PDFParse } from 'pdf-parse';
 import { CONSTANTS } from '../config/constants';
-
-// Resolve the worker explicitly so cold serverless instances use the same
-// PDF.js version as the parser. Vercel includes this file via includeFiles.
-PDFParse.setWorker(pathToFileURL(require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs')).href);
 
 export interface PdfExtractionResult {
   success: boolean;
@@ -31,8 +26,15 @@ export class PdfExtractionService {
   ];
 
   public static async extract(buffer: Buffer): Promise<PdfExtractionResult> {
-    const parser = new PDFParse({ data: buffer, isEvalSupported: false });
+    let parser: PDFParse | undefined;
     try {
+      // Load the Node canvas polyfills before PDF.js and use its bundled worker.
+      // Keep initialization within the request so a packaging error cannot take
+      // down unrelated API routes during a serverless cold start.
+      const { getData } = require('pdf-parse/worker');
+      const { PDFParse: Parser } = require('pdf-parse') as typeof import('pdf-parse');
+      Parser.setWorker(getData());
+      parser = new Parser({ data: buffer, isEvalSupported: false });
       const data = await parser.getText({ first: CONSTANTS.MAX_PDF_PAGES, pageJoiner: '\n\n' });
       const rawText = data.text || '';
       const pageCount = data.total;
@@ -111,7 +113,7 @@ export class PdfExtractionService {
         errorCode: 'RESUME_TEXT_INSUFFICIENT',
       };
     } finally {
-      await parser.destroy();
+      await parser?.destroy();
     }
   }
 
