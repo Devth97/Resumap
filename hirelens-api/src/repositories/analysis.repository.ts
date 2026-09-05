@@ -55,12 +55,31 @@ export class AnalysisRepository {
     try {
       const { error } = await this.supabase.from('analyses').select('id').limit(1);
       if (error) {
-        return { configured: true, reachable: false, detail: `${error.code}: ${error.message}` };
+        return {
+          configured: true,
+          reachable: false,
+          detail: this.summarizeFailure(`${error.code}: ${error.message}`),
+        };
       }
       return { configured: true, reachable: true };
     } catch (e: any) {
-      return { configured: true, reachable: false, detail: String(e?.message || e) };
+      return { configured: true, reachable: false, detail: this.summarizeFailure(String(e?.message || e)) };
     }
+  }
+
+  /**
+   * A paused or restarting Supabase project answers through Cloudflare with a
+   * full HTML error page, which the raw message would splice into /health in
+   * its entirety. Name the common cases and cap everything else.
+   */
+  private static summarizeFailure(raw: string): string {
+    if (/error code:?\s*521|web server is down/i.test(raw)) {
+      return 'Supabase is not accepting connections (HTTP 521) — the project is paused or still restarting.';
+    }
+    if (/<!DOCTYPE html|<html/i.test(raw)) {
+      return `Supabase returned an HTML error page instead of JSON: ${raw.replace(/\s+/g, ' ').slice(0, 160)}`;
+    }
+    return raw.replace(/\s+/g, ' ').slice(0, 300);
   }
 
   public static async save(record: AnalysisRecord): Promise<AnalysisRecord> {
