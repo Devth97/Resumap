@@ -86,9 +86,17 @@ export class GroqLlmProvider {
         };
       } catch (err: any) {
         lastErr = err;
-        // Retrying the same invalid credentials/model or exhausted rate limit
-        // cannot repair a response. Provider retries are handled below.
-        if (err?.status || err?.statusCode || err?.name === 'APIConnectionError') break;
+        // Groq can reject its own generated JSON with HTTP 400 before it
+        // reaches our schema parser. Give that generation the same bounded
+        // retry as locally detected invalid output. Other HTTP 400 errors
+        // (bad parameters), credentials, and model errors remain permanent.
+        const status = err?.status ?? err?.statusCode;
+        const invalidGeneration = status === 400 && (
+          err?.code === 'json_validate_failed' ||
+          err?.error?.code === 'json_validate_failed' ||
+          /Generated JSON does not match the expected schema/i.test(String(err?.message || ''))
+        );
+        if ((status && !invalidGeneration) || err?.name === 'APIConnectionError') break;
         // Only retry if another full generation still fits under the 60s cap.
         if (attempt < MAX_ATTEMPTS && Date.now() - startTime < REPAIR_BUDGET_MS) {
           continue;
