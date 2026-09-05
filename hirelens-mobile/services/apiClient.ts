@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { readApiResponse } from './apiResponse';
 
 const getApiBaseUrl = (): string => {
   if (process.env.EXPO_PUBLIC_API_BASE_URL) {
@@ -18,13 +19,6 @@ const getApiBaseUrl = (): string => {
   return 'https://resumap-tjv1.vercel.app/api/v1';
 };
 
-// Prefer the specific `detail` the backend attaches (e.g. the raw provider
-// error) over the generic wrapper `message` ("Analysis failed to complete.")
-// so failures are actually diagnosable from what the user sees on screen.
-function extractApiErrorMessage(data: any): string {
-  return data?.error?.detail || data?.error?.message || 'API request failed.';
-}
-
 export class ApiClient {
   public static async get<T>(path: string): Promise<T> {
     const baseUrl = getApiBaseUrl();
@@ -34,11 +28,7 @@ export class ApiClient {
       },
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(extractApiErrorMessage(data));
-    }
-    return data as T;
+    return readApiResponse<T>(res);
   }
 
   public static async post<T>(path: string, body: any, headers: Record<string, string> = {}): Promise<T> {
@@ -53,11 +43,7 @@ export class ApiClient {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(extractApiErrorMessage(data));
-    }
-    return data as T;
+    return readApiResponse<T>(res);
   }
 
   public static async uploadFile<T>(
@@ -104,10 +90,6 @@ export class ApiClient {
       body: formData,
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data?.error?.detail || data?.error?.message || 'File upload failed.');
-    }
-    return data as T;
+    return readApiResponse<T>(res);
   }
 }

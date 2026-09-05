@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import { ZodError } from 'zod';
 import { healthRoutes } from './routes/health.routes';
 import { sessionRoutes } from './routes/sessions.routes';
 import { roleRoutes } from './routes/roles.routes';
@@ -46,6 +47,19 @@ export function buildApp() {
 
   // Global Error Handler
   app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        error: {
+          code: CONSTANTS.ERROR_CODES.VALIDATION_ERROR,
+          message: 'Some request fields are missing or invalid.',
+          userAction: 'Please check your entries and submit again.',
+          fields: error.issues.map((issue) => ({
+            path: issue.path.join('.'),
+            message: issue.message,
+          })),
+        },
+      });
+    }
     logger.error(error);
     const statusCode = error.statusCode || 500;
     return reply.status(statusCode).send({
