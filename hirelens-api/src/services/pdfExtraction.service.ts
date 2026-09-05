@@ -1,12 +1,10 @@
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
+import { pathToFileURL } from 'node:url';
 import { CONSTANTS } from '../config/constants';
 
-// NOTE: do not pre-require pdf-parse's bundled pdf.js here to help Vercel's
-// file tracer see it. Loading that module before pdf-parse's own lazy require
-// (lib/pdf-parse.js:62) makes every subsequent parse fail with "bad XRef
-// entry", even on files that parse fine otherwise. The bundling problem is
-// solved in vercel.json via includeFiles instead, which costs nothing at
-// runtime.
+// Resolve the worker explicitly so cold serverless instances use the same
+// PDF.js version as the parser. Vercel includes this file via includeFiles.
+PDFParse.setWorker(pathToFileURL(require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs')).href);
 
 export interface PdfExtractionResult {
   success: boolean;
@@ -33,10 +31,11 @@ export class PdfExtractionService {
   ];
 
   public static async extract(buffer: Buffer): Promise<PdfExtractionResult> {
+    const parser = new PDFParse({ data: buffer, isEvalSupported: false });
     try {
-      const data = await pdfParse(buffer);
+      const data = await parser.getText({ first: CONSTANTS.MAX_PDF_PAGES, pageJoiner: '\n\n' });
       const rawText = data.text || '';
-      const pageCount = data.numpages || 1;
+      const pageCount = data.total;
 
       if (pageCount > CONSTANTS.MAX_PDF_PAGES) {
         return {
@@ -82,7 +81,7 @@ export class PdfExtractionService {
         isScanned: false,
       };
     } catch (err: any) {
-      if (err.message && err.message.includes('password')) {
+      if (err?.name === 'PasswordException' || /password/i.test(err?.message || '')) {
         return {
           success: false,
           text: '',
@@ -108,10 +107,11 @@ export class PdfExtractionService {
         pageCount: 0,
         characterCount: 0,
         isScanned: false,
-        error: 'Failed to extract text from PDF.',
-        detail: String(err?.message || err).slice(0, 300),
+        error: 'We could not read this PDF. Export it again as a PDF, or upload a clear JPG or PNG of your resume.',
         errorCode: 'RESUME_TEXT_INSUFFICIENT',
       };
+    } finally {
+      await parser.destroy();
     }
   }
 

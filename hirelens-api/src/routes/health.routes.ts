@@ -11,7 +11,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     return reply.send({
       status: 'ok',
       version: '1.0.0',
-      build: 'inline-text-1',
+      build: 'pdf-parser-2',
       persistence,
       timestamp: new Date().toISOString(),
     });
