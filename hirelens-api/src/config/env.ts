@@ -20,6 +20,7 @@ const envSchema = z.object({
   // above only for OCR (resumes.routes.ts), a separate feature.
   GROQ_API_KEY: z.string().optional(),
   GROQ_BASE_URL: z.string().default('https://api.groq.com/openai/v1'),
+  GROQ_MODEL: z.string().min(1).default('openai/gpt-oss-20b'),
 
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),

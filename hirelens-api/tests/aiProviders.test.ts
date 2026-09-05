@@ -12,6 +12,7 @@ describe('AI providers', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     if (originalNvidiaApiKey) {
       process.env.NVIDIA_API_KEY = originalNvidiaApiKey;
     } else {
@@ -43,5 +44,14 @@ describe('AI providers', () => {
     expect(result.signals.candidateProfile).toBeDefined();
     expect(result.signals.candidateProfile.educationSummary).toBe('B.Tech in Computer Science & Engineering');
     expect(result.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it.each([401, 404])('does not retry permanent provider errors (HTTP %s)', async (status) => {
+    process.env.GROQ_API_KEY = 'test-key';
+    const { GroqLlmProvider } = await import('../src/providers/llm/groqLlm.provider');
+    const create = vi.fn().mockRejectedValue(Object.assign(new Error('Provider rejected request'), { status }));
+    vi.spyOn(GroqLlmProvider as any, 'getClient').mockReturnValue({ chat: { completions: { create } } });
+    await expect(GroqLlmProvider.generateSignals('Sample resume', SEEDED_ROLE_PROFILES[0], {})).rejects.toThrow('Provider rejected request');
+    expect(create).toHaveBeenCalledTimes(1);
   });
 });

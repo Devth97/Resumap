@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { AnalysisRepository } from '../repositories/analysis.repository';
+import { config } from '../config/env';
 
 export async function healthRoutes(fastify: FastifyInstance) {
   fastify.get('/health', async (_request, reply) => {
@@ -12,6 +13,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
       status: 'ok',
       version: '1.0.0',
       build: 'pdf-parser-2',
+      analysis: { configured: Boolean(config.GROQ_API_KEY), model: config.GROQ_MODEL },
       persistence,
       timestamp: new Date().toISOString(),
     });

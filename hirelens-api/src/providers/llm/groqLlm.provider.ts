@@ -10,7 +10,9 @@ import { RoleProfile } from '../../schemas/roleProfile.schema';
 // directly against the deployed API, twice, identical timing). Groq's
 // inference is fast enough to run the full 70B model well within Vercel's
 // function budget instead of being forced down to an 8B model for speed.
-export const FAST_MODEL = 'llama-3.1-8b-instant';
+// Groq retired Llama 3.1 8B for free/developer accounts on 2026-08-16.
+// Keep the replacement configurable so future migrations need no code change.
+export const FAST_MODEL = config.GROQ_MODEL;
 // Budget before giving up on a second (retry) generation.
 const REPAIR_BUDGET_MS = 40_000;
 
@@ -83,6 +85,9 @@ export class GroqLlmProvider {
         };
       } catch (err: any) {
         lastErr = err;
+        // Retrying the same invalid credentials/model or exhausted rate limit
+        // cannot repair a response. Provider retries are handled below.
+        if (err?.status || err?.statusCode || err?.name === 'APIConnectionError') break;
         // Only retry if another full generation still fits under the 60s cap.
         if (attempt < MAX_ATTEMPTS && Date.now() - startTime < REPAIR_BUDGET_MS) {
           continue;
@@ -162,23 +167,21 @@ export class GroqLlmProvider {
     return AnalysisSignalSchema.parse(jsonObj);
   }
 
-  // One fast generation on FAST_MODEL. Plain generation (NO response_format) —
-  // guided-JSON/grammar-constrained decoding was slow and truncation-prone on
-  // the previous provider for this large analysis schema. We rely on the
-  // prompt + stripMarkdownWrappers + a repair pass for valid JSON instead.
-  // A generous token ceiling avoids mid-object truncation.
+  // Request JSON and still validate the complete analysis schema afterwards.
   private static async createJsonCompletion(
     client: OpenAI,
     messages: Array<{ role: 'system' | 'user'; content: string }>,
     temperature: number
   ) {
-    // The prompt's own OUTPUT_LENGTH_RULES demand a compact response (max 3
-    // strengths/gaps, 4 short roadmap stages, 3 immediate actions, all
-    // strings under 12 words) — observed real usage tops out well under
-    // 2000 tokens. Groq's TPM rate accounting appears to weigh the
-    // requested ceiling, so keeping this tight (not 4000) leaves more of
-    // the 12K TPM free-tier budget for other concurrent requests.
-    const base = { model: FAST_MODEL, temperature, top_p: 0.7, max_tokens: 2000, messages };
+    // GPT-OSS counts reasoning in the completion budget. Leave room for it
+    // alongside the compact report and keep reasoning out of the JSON content.
+    const base = {
+      model: FAST_MODEL, temperature, top_p: 0.7, max_completion_tokens: 4096, messages,
+      response_format: { type: 'json_object' as const },
+      ...(FAST_MODEL.startsWith('openai/gpt-oss-')
+        ? { reasoning_effort: 'low' as const, include_reasoning: false }
+        : {}),
+    };
     try {
       return await client.chat.completions.create(base);
     } catch (err: any) {
