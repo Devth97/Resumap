@@ -11,9 +11,8 @@ export interface OcrResult {
 
 export class NvidiaOcrProvider {
   /**
-   * Executes OCR on normalized image buffers using an NVIDIA NIM OCR model
-   * (default: nvidia/nemotron-ocr-v2) via the OpenAI-compatible
-   * /v1/chat/completions endpoint.
+   * Executes OCR on normalized image buffers using the NVIDIA NIM OCR API
+   * (nemotron-ocr-v2) via the /v1/ocr endpoint.
    */
   public static async processImages(imageBuffers: Buffer[]): Promise<OcrResult> {
     if (!config.NVIDIA_API_KEY) {
@@ -26,27 +25,19 @@ export class NvidiaOcrProvider {
     }
 
     try {
-      const imageContent = imageBuffers.map((buf) => ({
-        type: 'image_url',
-        image_url: {
-          url: `data:image/jpeg;base64,${buf.toString('base64')}`,
-        },
+      const input = imageBuffers.map((buf) => ({
+        type: 'image_url' as const,
+        url: `data:image/jpeg;base64,${buf.toString('base64')}`,
       }));
 
       const requestBody = {
-        model: config.NVIDIA_OCR_MODEL,
-        temperature: 0,
-        tools: [{ type: 'function', function: { name: 'markdown_no_bbox' } }],
-        messages: [
-          {
-            role: 'user',
-            content: imageContent,
-          },
-        ],
+        input,
+        merge_levels: ['paragraph'] as string[],
       };
 
       const response = await retryWithBackoff(async () => {
-        const res = await fetch(`${config.NVIDIA_BASE_URL}/chat/completions`, {
+        const ocrBaseUrl = 'https://ocr.nvidia.com/v1';
+        const res = await fetch(`${ocrBaseUrl}/ocr`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${config.NVIDIA_API_KEY}`,
@@ -57,32 +48,25 @@ export class NvidiaOcrProvider {
 
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`NVIDIA OCR error ${res.status} from ${config.NVIDIA_BASE_URL}/chat/completions: ${errText}`);
+          throw new Error(`NVIDIA OCR error ${res.status}: ${errText}`);
         }
 
         return res.json();
       }, 2, 2000);
 
-      const message = response?.choices?.[0]?.message || {};
-      let extractedText = (message.content || '').trim();
+      const texts = (response?.data || [])
+        .map((detection: any) => {
+          if (Array.isArray(detection?.text_detections)) {
+            return detection.text_detections
+              .map((d: any) => d?.text_prediction?.text || '')
+              .filter(Boolean)
+              .join(' ');
+          }
+          return detection?.text || '';
+        })
+        .filter(Boolean);
 
-      // Nemotron Parse returns extracted text in tool_calls[].function.arguments
-      if (!extractedText && Array.isArray(message.tool_calls)) {
-        const texts = message.tool_calls
-          .map((call: any) => {
-            try {
-              const parsed = JSON.parse(call.function?.arguments || '[]');
-              if (Array.isArray(parsed)) {
-                return parsed.map((item: any) => item.text).filter(Boolean).join('\n');
-              }
-              return parsed.text || '';
-            } catch {
-              return call.function?.arguments || '';
-            }
-          })
-          .filter(Boolean);
-        extractedText = texts.join('\n').trim();
-      }
+      const extractedText = texts.join('\n').trim();
 
       if (extractedText.length < CONSTANTS.MIN_EXTRACTED_CHARACTERS) {
         return {
@@ -99,7 +83,6 @@ export class NvidiaOcrProvider {
         confidence: 0.9,
       };
     } catch (err: any) {
-      // Return clear error if API fails
       return {
         success: false,
         text: '',

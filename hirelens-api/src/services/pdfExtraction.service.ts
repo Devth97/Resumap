@@ -1,19 +1,12 @@
 import pdfParse from 'pdf-parse';
 import { CONSTANTS } from '../config/constants';
 
-// pdf-parse loads its bundled pdf.js through a template-literal require:
-//
-//   require(`./pdf.js/${options.version}/build/pdf.js`)   (lib/pdf-parse.js:62)
-//
-// Vercel traces imports statically, so it cannot see that path and leaves
-// lib/pdf.js/** out of the serverless bundle entirely. The require then throws
-// MODULE_NOT_FOUND at call time and every upload fails with "Failed to extract
-// text from PDF" — in production only, since local runs have node_modules on
-// disk. This static require names the file the tracer needs to include; it
-// resolves the same module pdf-parse asks for, so the dynamic require below it
-// then succeeds. v1.10.100 is pdf-parse's DEFAULT_OPTIONS.version — keep the
-// two in sync.
-require('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js');
+// NOTE: do not pre-require pdf-parse's bundled pdf.js here to help Vercel's
+// file tracer see it. Loading that module before pdf-parse's own lazy require
+// (lib/pdf-parse.js:62) makes every subsequent parse fail with "bad XRef
+// entry", even on files that parse fine otherwise. The bundling problem is
+// solved in vercel.json via includeFiles instead, which costs nothing at
+// runtime.
 
 export interface PdfExtractionResult {
   success: boolean;

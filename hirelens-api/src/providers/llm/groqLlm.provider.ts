@@ -10,7 +10,7 @@ import { RoleProfile } from '../../schemas/roleProfile.schema';
 // directly against the deployed API, twice, identical timing). Groq's
 // inference is fast enough to run the full 70B model well within Vercel's
 // function budget instead of being forced down to an 8B model for speed.
-export const FAST_MODEL = 'llama-3.3-70b-versatile';
+export const FAST_MODEL = 'llama-3.1-8b-instant';
 // Budget before giving up on a second (retry) generation.
 const REPAIR_BUDGET_MS = 40_000;
 
