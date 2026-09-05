@@ -6,11 +6,12 @@ const getApiBaseUrl = (): string => {
   }
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // On Vercel public web deployment, use relative URL (same domain)
-    if (hostname.includes('vercel.app')) {
-      return '/api/v1';
+    // Only local web development uses the separate development server.
+    // Hosted sites, including custom domains, use Vercel's same-origin API route.
+    if (['localhost', '127.0.0.1', '[::1]', '::1'].includes(hostname)) {
+      return 'http://localhost:8080/api/v1';
     }
-    return 'http://localhost:8080/api/v1';
+    return '/api/v1';
   }
   // Native builds (Android/iOS): default to the live production API. For local
   // native dev against your machine, set EXPO_PUBLIC_API_BASE_URL instead.
