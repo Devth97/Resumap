@@ -12,7 +12,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     return reply.send({
       status: 'ok',
       version: '1.0.0',
-      build: 'pdf-parser-2',
+      build: 'pdf-parser-2-structured',
       analysis: { configured: Boolean(config.GROQ_API_KEY), model: config.GROQ_MODEL },
       persistence,
       timestamp: new Date().toISOString(),

@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
 import { config } from '../../config/env';
 import { SYSTEM_PROMPT, buildAnalysisPrompt } from '../../prompts/resumeAnalysis.prompt';
 import { REPAIR_JSON_SYSTEM_PROMPT, buildRepairPrompt } from '../../prompts/repairJson.prompt';
@@ -177,7 +178,7 @@ export class GroqLlmProvider {
     // alongside the compact report and keep reasoning out of the JSON content.
     const base = {
       model: FAST_MODEL, temperature, top_p: 0.7, max_completion_tokens: 4096, messages,
-      response_format: { type: 'json_object' as const },
+      response_format: zodResponseFormat(AnalysisSignalSchema, 'resume_analysis'),
       ...(FAST_MODEL.startsWith('openai/gpt-oss-')
         ? { reasoning_effort: 'low' as const, include_reasoning: false }
         : {}),

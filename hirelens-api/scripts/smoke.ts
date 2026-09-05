@@ -18,7 +18,7 @@ async function request(path: string, init?: RequestInit, expected = 200) {
 
 async function main() {
   const health = await request('/health');
-  assert.equal(health.build, 'pdf-parser-2', 'The parser fix has not reached this deployment.');
+  assert.equal(health.build, 'pdf-parser-2-structured', 'The complete fix has not reached this deployment.');
   assert.equal(health.analysis?.configured, true, 'A real Groq key must be configured for this smoke test.');
   console.log('Analysis model:', health.analysis.model);
   console.log('Persistence:', JSON.stringify(health.persistence));
